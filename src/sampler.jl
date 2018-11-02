@@ -1,5 +1,3 @@
-
-
 struct IsingSampler <: Sampleable{Multivariate,Discrete}
     m::Int64                 # number of vertices
     θ::Matrix{Float64}       # parameter matrix
@@ -52,6 +50,7 @@ function Distributions._rand!(s::IsingSampler, x::BitMatrix)
       _sample_one!(s)
       x[:, i] .= s.state
     end
+    x
 end
 
 function Distributions._rand!(s::IsingSampler, x::BitVector)
