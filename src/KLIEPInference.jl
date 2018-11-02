@@ -1,5 +1,18 @@
 module KLIEPInference
 
-greet() = print("Hello World!")
+
+using Distributions
+
+export IsingSampler
+
+
+
+include("sampler.jl")
+
+
+
+
+
+
 
 end # module
