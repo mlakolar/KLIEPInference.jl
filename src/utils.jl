@@ -16,3 +16,13 @@ function Ψising(X)
     end
     out
 end
+
+function KLIEP_Hessian(θ, Ψy)
+  m, n = size(Ψy)
+
+  w = transpose(Ψy) * θ
+  w .= exp.(w)
+  w ./= mean(w)
+
+  StatsBase.cov(Ψy, weights(w), 2; corrected=false)
+end

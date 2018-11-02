@@ -39,7 +39,7 @@ version = "1.3.0"
 
 [[CoordinateDescent]]
 deps = ["DataStructures", "LinearAlgebra", "ProximalBase", "SparseArrays", "Statistics"]
-git-tree-sha1 = "32352a50b0f87fd09458a58fe19617fbb08887a5"
+git-tree-sha1 = "b96c0c6164928b7e6b3249a419c8e5dc261a178b"
 repo-rev = "master"
 repo-url = "https://github.com/mlakolar/CoordinateDescent.jl.git"
 uuid = "af3e6e94-ae3f-11e8-2d74-f149f5661110"
@@ -99,7 +99,7 @@ version = "0.4.3"
 
 [[JuMP]]
 deps = ["Calculus", "Compat", "DataStructures", "ForwardDiff", "LinearAlgebra", "MathOptInterface", "NaNMath", "Printf", "Statistics"]
-git-tree-sha1 = "4858687b8f6324170b87f9eb502e1540247bd768"
+git-tree-sha1 = "01ee7396112df3028af080d518ba78421e0062a1"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaOpt/JuMP.jl.git"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
@@ -183,7 +183,7 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[ProximalBase]]
 deps = ["Distributions", "Ipopt", "JuMP", "LinearAlgebra", "Random", "SparseArrays", "Statistics", "Test"]
-git-tree-sha1 = "54cf93e709c16eb25f4703898684454384631543"
+git-tree-sha1 = "0882efdff13d372e6eb476be82605486a92518a4"
 repo-rev = "master"
 repo-url = "https://github.com/mlakolar/ProximalBase.jl.git"
 uuid = "e46f183a-ae2f-11e8-253c-bfe2254e1c56"

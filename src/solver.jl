@@ -26,6 +26,31 @@ function spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP)
     convert(Vector, coordinateDescent!(SparseIterate(f.p), f, g))
 end
 
+function Hinv_row(H, row, λ0)
+    m = size(H, 1)
+    e = zeros(m)
+    e[row] = -1.0
+
+    x = SparseIterate(m)
+    x[row] = 1.
+    f = CDQuadraticLoss(H, e)
+
+    # init sigma
+    σ = sqrt( dot(x, H * x) )
+
+    for iter=1:10
+        coordinateDescent!(x, f, ProxL1(λ0 * σ))
+        σnew = sqrt( dot(x, H * x) )
+
+        if abs(σnew - σ) / σ < 1e-2
+          break
+        end
+        σ = σnew
+    end
+
+    convert(Vector, x)
+end
+
 
 ### solvers
 
@@ -140,7 +165,7 @@ function CoordinateDescent.descendCoordinate!(
   mean_exp_r_Ψy2 = mean( exp.(r) .* Ψy[j, :].^2. )
 
   @inbounds grad = -μx[j] + mean_exp_r_Ψy / mean_exp_r
-  H = (mean_exp_r_Ψy2 - mean_exp_r_Ψy^2) / mean_exp_r^2.
+  H = mean_exp_r_Ψy2 / mean_exp_r - mean_exp_r_Ψy^2 / mean_exp_r^2.
 
   @inbounds oldVal = x[j]
   @inbounds x[j] -= grad / H

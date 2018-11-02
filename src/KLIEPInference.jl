@@ -4,6 +4,7 @@ module KLIEPInference
 using Distributions, LinearAlgebra
 import JuMP, MathOptInterface, MathOptInterfaceMosek, SCS
 const MOI = MathOptInterface
+using StatsBase
 using ProximalBase, CoordinateDescent
 
 export
@@ -15,9 +16,11 @@ export
   Mosek_KLIEP,
   KLIEP,
   spKLIEP,
+  Hinv_row,
 
   #
-  Ψising
+  Ψising,
+  KLIEP_Hessian
 
 
 include("sampler.jl")
