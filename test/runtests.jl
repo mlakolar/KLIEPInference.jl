@@ -1,5 +1,6 @@
 
 tests = [
+  "utils"
 ]
 
 for t in tests

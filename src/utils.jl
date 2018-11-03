@@ -27,11 +27,33 @@ function KLIEP_Hessian(θ, Ψy)
   StatsBase.cov(Ψy, weights(w), 2; corrected=false)
 end
 
-
-
 function _maxabs(a, b)
     maximum(x -> abs(x[1]-x[2]), zip(a, b))
 end
+
+
+# maps (i, j) coordinate of a symmetric matrix to a packed format
+# diagonal of the matrix is not included
+# lower triangular part is mapped row by row
+function trimap(i::Integer, j::Integer)
+    if i < j
+        trimap(j, i)
+    else
+        div((i-2)*(i-1), 2) + j
+    end
+end
+
+# mapping from packed storage to (i, j)
+function itrimap(k::Integer)
+    # i = isqrt(2*k)
+    # j = k - div((i-1)*i, 1)
+
+    j = isqrt(2*k)
+    i = k - div((j-1)*j, 2)
+
+    i+1, j
+end
+
 
 
 ####################################
