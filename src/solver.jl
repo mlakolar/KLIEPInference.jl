@@ -9,12 +9,18 @@ struct Mosek_KLIEP <: KLIEPSolver end
 KLIEP(Ψx, Ψy, ::SCS_KLIEP) = _KLIEP(Ψx, Ψy, JuMP.with_optimizer(SCS.Optimizer, verbose=1))
 KLIEP(Ψx, Ψy, ::Mosek_KLIEP) = _KLIEP(Ψx, Ψy, JuMP.with_optimizer(MathOptInterfaceMosek.MosekOptimizer, QUIET=false))
 
-function KLIEP(Ψx, Ψy, ::CD_KLIEP)
+KLIEP(Ψx, Ψy, ::CD_KLIEP) = KLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy)
+
+function KLIEP!(x::SparseIterate, Ψx, Ψy)
     f = CDKLIEPLoss(Ψx, Ψy)
     g = ProxZero()
 
-    convert(Vector, coordinateDescent!(SparseIterate(f.p), f, g))
+    coordinateDescent!(x, f, g)
 end
+
+
+
+
 
 spKLIEP(Ψx, Ψy, λ, ::SCS_KLIEP) =
   _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.with_optimizer(SCS.Optimizer, verbose=1))
@@ -25,6 +31,10 @@ function spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP)
 
     convert(Vector, coordinateDescent!(SparseIterate(f.p), f, g))
 end
+
+
+
+
 
 function Hinv_row(H, row, λ0)
     m = size(H, 1)

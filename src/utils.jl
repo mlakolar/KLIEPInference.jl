@@ -26,3 +26,9 @@ function KLIEP_Hessian(θ, Ψy)
 
   StatsBase.cov(Ψy, weights(w), 2; corrected=false)
 end
+
+
+
+function _maxabs(a, b)
+    maximum(x -> abs(x[1]-x[2]), zip(a, b))
+end
