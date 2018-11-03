@@ -81,3 +81,11 @@ function _sample_one_coordinate!(
     Q = exp(2. * v)
     y[node] = rand() <= Q / (Q + 1.)
 end
+
+
+### graph construction
+
+function chain(p::Int64, lb, ub)
+    Θ = diagm(1 => (rand(Uniform(lb, ub), p-1) .* (2. .* rand(Bernoulli(), p-1) .- 1.)))
+    Θ + Θ'
+end

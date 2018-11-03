@@ -4,6 +4,10 @@ struct CD_KLIEP <: KLIEPSolver end
 struct SCS_KLIEP <: KLIEPSolver end
 struct Mosek_KLIEP <: KLIEPSolver end
 
+
+
+
+
 ### interface
 
 KLIEP(Ψx, Ψy, ::SCS_KLIEP) = _KLIEP(Ψx, Ψy, JuMP.with_optimizer(SCS.Optimizer, verbose=1))
@@ -21,18 +25,20 @@ end
 
 
 
-
 spKLIEP(Ψx, Ψy, λ, ::SCS_KLIEP) =
   _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.with_optimizer(SCS.Optimizer, verbose=1))
 
-function spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP)
+spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP) =
+  spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
+
+function spKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
     f = CDKLIEPLoss(Ψx, Ψy)
     g = ProxL1(λ)
 
-    convert(Vector, coordinateDescent!(SparseIterate(f.p), f, g))
+    coordinateDescent!(x, f, g)
 end
 
-
+spKLIEP!(x::SparseIterate, f::CDKLIEPLoss, g::ProxL1) = coordinateDescent!(x, f, g)
 
 
 
@@ -49,16 +55,17 @@ function Hinv_row(H, row, λ0)
     σ = sqrt( dot(x, H * x) )
 
     for iter=1:10
+        @show iter
         coordinateDescent!(x, f, ProxL1(λ0 * σ))
         σnew = sqrt( dot(x, H * x) )
 
-        if abs(σnew - σ) / σ < 1e-2
+        if abs(σnew - σ) / σ < 1e-3
           break
         end
         σ = σnew
     end
 
-    convert(Vector, x)
+    x
 end
 
 
@@ -116,75 +123,4 @@ function _spKLIEP!(θhat, Ψx, Ψy, λ, solver)
 
     θhat .= JuMP.result_value.(x)
 
-end
-
-
-
-
-
-
-
-####################################
-#
-# loss En[-θ'Ψx(i)] + log( En[exp(θ'Ψy(i))] )
-#
-####################################
-struct CDKLIEPLoss <: CoordinateDifferentiableFunction
-  μx::Vector{Float64}   # mean(Ψx, dims = 2)
-  Ψy::Matrix{Float64}
-  r::Vector{Float64}    # ny dim vector --- stores θ'Ψy(i)
-  p::Int64
-end
-
-function CDKLIEPLoss(Ψx::Matrix{Float64}, Ψy::Matrix{Float64})
-  (p = size(Ψx, 1)) == size(Ψy, 1) || throw(DimensionMismatch())
-
-  CDKLIEPLoss(vec(mean(Ψx, dims=2)), Ψy, zeros(size(Ψy, 2)), p)
-end
-
-CoordinateDescent.numCoordinates(f::CDKLIEPLoss) = f.p
-
-function CoordinateDescent.initialize!(f::CDKLIEPLoss, x::SparseIterate)
-
-  mul!(f.r, transpose(f.Ψy), x)
-
-  nothing
-end
-
-function CoordinateDescent.gradient(
-  f::CDKLIEPLoss,
-  x::SparseIterate,
-  j::Int64)
-
-  μx, Ψy, r = f.μx, f.Ψy, f.r
-
-  -μx[j] + mean( exp.(r) .* Ψy[j, :] ) / mean(exp, r)
-end
-
-
-function CoordinateDescent.descendCoordinate!(
-  f::CDKLIEPLoss,
-  g::Union{ProxL1, ProxZero},
-  x::SparseIterate,
-  j::Int64)
-
-  μx, Ψy, r = f.μx, f.Ψy, f.r
-
-  mean_exp_r = mean(exp, r)
-  mean_exp_r_Ψy = mean( exp.(r) .* Ψy[j, :] )
-  mean_exp_r_Ψy2 = mean( exp.(r) .* Ψy[j, :].^2. )
-
-  @inbounds grad = -μx[j] + mean_exp_r_Ψy / mean_exp_r
-  H = mean_exp_r_Ψy2 / mean_exp_r - mean_exp_r_Ψy^2 / mean_exp_r^2.
-
-  @inbounds oldVal = x[j]
-  @inbounds x[j] -= grad / H
-  newVal = cdprox!(g, x, j, 1. / H)
-  h = newVal - oldVal
-
-  # update internals
-  for i=1:length(r)
-      @inbounds r[i] += h*Ψy[j, i]
-  end
-  h
 end

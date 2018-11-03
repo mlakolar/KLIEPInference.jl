@@ -9,13 +9,14 @@ using ProximalBase, CoordinateDescent
 
 export
   IsingSampler,
+  chain,
 
   # KLIEP solvers
   CD_KLIEP,
   SCS_KLIEP,
   Mosek_KLIEP,
   KLIEP, KLIEP!,
-  spKLIEP,
+  spKLIEP, spKLIEP!,
   Hinv_row,
 
   # inference
@@ -27,10 +28,9 @@ export
   Ψising,
   KLIEP_Hessian
 
-
+include("utils.jl")
 include("sampler.jl")
 include("solver.jl")
-include("utils.jl")
 include("bootstrap.jl")
 
 
