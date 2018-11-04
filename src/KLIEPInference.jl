@@ -1,7 +1,7 @@
 module KLIEPInference
 
 
-using Distributions, LinearAlgebra, Statistics
+using Distributions, LinearAlgebra, Statistics, SparseArrays
 import JuMP, MathOptInterface, MathOptInterfaceMosek, SCS
 const MOI = MathOptInterface
 using StatsBase
@@ -18,11 +18,12 @@ export
   SCS_KLIEP,
   Mosek_KLIEP,
   KLIEP, KLIEP!,
-  spKLIEP, spKLIEP!,
+  spKLIEP, spKLIEP!, spKLIEP_refit!,
   Hinv_row,
 
   # inference
   boot_KLIEP,
+  boot_spKLIEP,
   simulCI,
   simulCIstudentized,
 

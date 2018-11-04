@@ -31,6 +31,58 @@ function boot_KLIEP(Ψx, Ψy; bootSamples::Int64=300)
     BootstrapEstimates(θhat, θb)
 end
 
+# Hinv = Vector{SparseVector{Float64,Int64}}(undef, m)
+function boot_spKLIEP(Ψx, Ψy, θfs, Hinv; bootSamples::Int64=300)
+
+    # generate bootstrap samples first since we want to use the same
+    # samples for each coordinate j=1...m
+    m, nx = size(Ψx)
+    ny = size(Ψy, 2)
+
+    x_ind = Matrix{Int16}(undef, nx, bootSamples)
+    y_ind = Matrix{Int16}(undef, ny, bootSamples)
+
+    for b=1:bootSamples
+       sample!(1:nx, view(x_ind, :, b))
+       sample!(1:ny, view(y_ind, :, b))
+    end
+    θhat = Vector{Float64}(undef, m)
+    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
+
+    supp1 = findall(!iszero, θfs)
+    for j=1:m
+        supp2 = findall(!iszero, Hinv[j])
+
+        supp3 = union(supp1, supp2)
+        pos_j = findfirst(isequal(j), supp3)
+        if pos_j == nothing
+            push!(supp3, j)
+        else
+            supp3[pos_j], supp3[end] = supp3[end], supp3[pos_j]
+        end
+
+        # obtain θhat_j
+        bΨx = Ψx[supp3, :]
+        bΨy = Ψy[supp3, :]
+        bbΨx = similar(bΨx)
+        bbΨy = similar(bΨy)
+        θ = KLIEP(bΨx, bΨy, CD_KLIEP())
+        θhat[j] = θ[end]
+
+        # bootstrap
+        for b=1:bootSamples
+           _fill_boot_Psi!(bbΨx, bΨx, view(x_ind, :, b))
+           _fill_boot_Psi!(bbΨy, bΨy, view(y_ind, :, b))
+
+           KLIEP!(θ, bbΨx, bbΨy)
+           θb[j, b] = θ[end]
+        end
+    end
+
+    BootstrapEstimates(θhat, θb)
+end
+
+
 function simulCI(straps::BootstrapEstimates, α::Float64=0.95)
     m, bootSamples = size(straps.θb)
 

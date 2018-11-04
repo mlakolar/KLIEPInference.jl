@@ -40,6 +40,21 @@ end
 
 spKLIEP!(x::SparseIterate, f::CDKLIEPLoss, g::ProxL1) = coordinateDescent!(x, f, g)
 
+function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy)
+    m = length(x)
+    ω = ones(Float64, m) * 1e10
+
+    for i=1:m
+        if !iszero(x[i])
+            ω[i] = 0.
+        end
+    end
+
+    f = CDKLIEPLoss(Ψx, Ψy)
+    g = ProxL1(1., ω)
+    coordinateDescent!(x, f, g)
+end
+
 
 
 function Hinv_row(H, row, λ0)
