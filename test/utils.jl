@@ -8,8 +8,8 @@ import KLIEPInference: trimap, itrimap
 	@test trimap(1, 2) == 1
 	@test trimap(4, 3) == 6
 
-	@test itrimap(1) == (2, 1)
-	@test itrimap(6) == (4, 3)
+	@test itrimap(1) == CartesianIndex(2, 1)
+	@test itrimap(6) == CartesianIndex(4, 3)
 end
 
 end

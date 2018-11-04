@@ -1,14 +1,14 @@
 
 function Ψising(X)
-    m, n = size(X)
+    p, n = size(X)
 
-    p = div(m * (m - 1), 2)
-    out = zeros(Float64, p, n)
+    m = div(p * (p - 1), 2)
+    out = zeros(Float64, m, n)
 
     for i=1:n
         ind = 0
-        for col=1:m
-            for row=col+1:m
+        for row=2:p
+            for col=1:row-1
                 ind += 1
                 out[ind, i] = xor(X[col, i], X[row, i]) ? -1. : 1.
             end
@@ -45,16 +45,20 @@ end
 
 # mapping from packed storage to (i, j)
 function itrimap(k::Integer)
-    # i = isqrt(2*k)
-    # j = k - div((i-1)*i, 1)
-
-    j = isqrt(2*k)
-    i = k - div((j-1)*j, 2)
-
-    i+1, j
+    i = convert(Int, ceil((1. + sqrt(1. + 8. * k)) / 2.))
+    j = k - div((i - 1) * (i - 2), 2)
+    CartesianIndex(i, j)
 end
 
-
+function unpack(θ)
+    m = length(θ)
+    p = convert(Int, ceil((1. + sqrt(1. + 8. * m)) / 2.))
+    out = zeros(Float64, p, p)
+    for i=1:m
+        out[itrimap(i)] = θ[i]
+    end
+    out + out'
+end
 
 ####################################
 #

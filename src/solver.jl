@@ -55,7 +55,6 @@ function Hinv_row(H, row, λ0)
     σ = sqrt( dot(x, H * x) )
 
     for iter=1:10
-        @show iter
         coordinateDescent!(x, f, ProxL1(λ0 * σ))
         σnew = sqrt( dot(x, H * x) )
 

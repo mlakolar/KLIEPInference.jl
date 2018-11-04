@@ -10,6 +10,8 @@ using ProximalBase, CoordinateDescent
 export
   IsingSampler,
   chain,
+  removeEdges!,
+  addEdges!,
 
   # KLIEP solvers
   CD_KLIEP,
@@ -26,7 +28,8 @@ export
 
   # utils
   Ψising,
-  KLIEP_Hessian
+  KLIEP_Hessian,
+  unpack
 
 include("utils.jl")
 include("sampler.jl")
