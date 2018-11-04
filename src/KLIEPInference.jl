@@ -1,9 +1,6 @@
 module KLIEPInference
 
-
 using Distributions, LinearAlgebra, Statistics, SparseArrays
-import JuMP, MathOptInterface, MathOptInterfaceMosek, SCS
-const MOI = MathOptInterface
 using StatsBase
 using ProximalBase, CoordinateDescent
 
@@ -14,9 +11,8 @@ export
   addEdges!,
 
   # KLIEP solvers
+  KLIEPSolver,
   CD_KLIEP,
-  SCS_KLIEP,
-  Mosek_KLIEP,
   KLIEP, KLIEP!,
   spKLIEP, spKLIEP!, spKLIEP_refit!,
   Hinv_row,
@@ -36,7 +32,7 @@ include("utils.jl")
 include("sampler.jl")
 include("solver.jl")
 include("bootstrap.jl")
-
+include("alt_implementation.jl")
 
 
 
