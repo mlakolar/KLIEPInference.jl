@@ -1,6 +1,7 @@
 using KLIEPInference
 using Distributions
 using LinearAlgebra
+using SparseArrays
 using Random
 using JLD
 
@@ -9,16 +10,12 @@ nx = parse(Int,ARGS[2])
 ny = parse(Int,ARGS[3])
 rep = parse(Int, ARGS[4])
 
-# file = jldopen(fname, "r")
-# p = read(file, "p")
-# sgn = read(file, "sgn")
-# θx = read(file, "θx")
-# θy = read(file, "θy")
-# close(file)
-
-@load fname
-
-Δ = θx - θy
+file = jldopen(fname, "r")
+p = read(file, "p")
+sgn = read(file, "sgn")
+θx = read(file, "θx")
+θy = read(file, "θy")
+close(file)
 
 # generate data
 
