@@ -21,6 +21,7 @@ export
   boot_KLIEP,
   boot_spKLIEP,
   boot_oracleKLIEP,
+  boot_gaussKLIEP,
   simulCI,
   simulCIstudentized,
 

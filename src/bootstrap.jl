@@ -132,6 +132,56 @@ function boot_oracleKLIEP(Ψx, Ψy, S_delta; bootSamples::Int64=300)
 end
 
 
+function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
+
+    # generate bootstrap samples first since we want to use the same
+    # samples for each coordinate j=1...m
+    m, nx = size(Ψx)
+    ny = size(Ψy, 2)
+
+    # compute weights corresponding to rhat
+    w = transpose(Ψy) * θ
+    w .= exp.(w)
+    w ./= mean(w)
+
+    # means
+    mux = mean(Ψx, dims = 2)
+    muy = mean(Ψy, weights(w), dims = 2 )
+
+    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
+
+    # store Gaussian multipliers
+    gx = Vector{Float64}(undef, nx)
+    gy = Vector{Float64}(undef, ny)
+
+    tmp1 = Vector{Float64, m}
+    tmp2 = Vector{Float64, m}
+    # bootstrap
+    for b=1:bootSamples
+        rand!(Normal(), gx)
+        rand!(Normal(), gy)
+
+        fill!(tmp1, 0.)
+        fill!(tmp2, 0.)
+        for i=1:nx
+            @. tmp1 += (Ψx[:, i] - mux) * gx[i]
+        end
+
+        for i=1:ny
+            @. tmp2 += (Ψy[:, i] * w[i] - muy) * gy[i]
+        end
+        @. tmp1 = tmp1 / nx + tmp2 / ny
+
+        for j=1:m
+            θb[j, b] = θhat[j] + dot(Hin[j], tmp1)
+        end
+    end
+
+    BootstrapEstimates(θhat, θb)
+end
+
+
+
 function simulCI(straps::BootstrapEstimates, α::Float64=0.95)
     m, bootSamples = size(straps.θb)
 
