@@ -15,6 +15,7 @@ sgn = parse(Int, ARGS[2])
 nx = parse(Int,ARGS[3])
 ny = parse(Int,ARGS[4])
 resPath = ARGS[5]
+alpha = parse(Float64, ARGS[6])
 
 # resPath = "/scratch/midway2/mkolar/KLIEP/exp1/oracle"
 NUM_REP = 1000
@@ -33,10 +34,10 @@ for rep=1:NUM_REP
       res = read(file, "res")
       close(file)
 
-      CI = simulCI(res)
+      CI = simulCI(res, alpha)
       coverage += all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 
-      CI = simulCIstudentized(res)
+      CI = simulCIstudentized(res, alpha)
       coverage_stud += all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
     catch
       not_done -= 1
