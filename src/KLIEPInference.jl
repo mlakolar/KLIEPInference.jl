@@ -20,6 +20,7 @@ export
   # inference
   boot_KLIEP,
   boot_spKLIEP,
+  boot_oracleKLIEP,
   simulCI,
   simulCIstudentized,
 
@@ -32,8 +33,6 @@ include("utils.jl")
 include("sampler.jl")
 include("solver.jl")
 include("bootstrap.jl")
-include("alt_implementation.jl")
-
 
 
 
