@@ -173,7 +173,7 @@ function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
         @. tmp1 = tmp1 / nx + tmp2 / ny
 
         for j=1:m
-            θb[j, b] = θhat[j] + dot(Hin[j], tmp1)
+            θb[j, b] = θhat[j] + dot(Hinv[j], tmp1)
         end
     end
 
