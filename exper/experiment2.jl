@@ -5,14 +5,13 @@ using SparseArrays
 using Random
 using JLD
 
-fname = ARGS[1]
-nx = parse(Int,ARGS[2])
-ny = parse(Int,ARGS[3])
-rep = parse(Int, ARGS[4])
+p = parse(Int,ARGS[1])
+sgn = parse(Int, ARGS[2])
+nx = parse(Int,ARGS[3])
+ny = parse(Int,ARGS[4])
+rep = parse(Int, ARGS[5])
 
-file = jldopen(fname, "r")
-p = read(file, "p")
-sgn = read(file, "sgn")
+file = jldopen("params_exp2_$(p)_$(sgn).jld", "r")
 θx = read(file, "θx")
 θy = read(file, "θy")
 close(file)
@@ -33,28 +32,23 @@ Y = rand(spl, ny)
 # step 1
 #
 ###########################
-@show "step 1"
 m = div(p * (p - 1),  2)
-@show λ1 = 1.2 * sqrt(2. * log(m) / nx)
+@show λ1 = 1.3 * sqrt(2. * log(m) / nx)
 θhat = spKLIEP(Ψx, Ψy, λ1, CD_KLIEP())
 spKLIEP_refit!(θhat, Ψx, Ψy)
-@show "step 1 done"
 
 ###########################
 #
 # step 2
 #
 ###########################
-@show "step 2"
-@show λ2 = 1.2 * sqrt(2. * log(p) / ny)
+@show λ2 = 1.3 * sqrt(2. * log(p) / ny)
 H = KLIEP_Hessian(θhat, Ψy)
 Hinv = Vector{SparseVector{Float64,Int64}}(undef, m)
 for row=1:m
     ω = Hinv_row(H, row, λ2)
     Hinv[row] = convert(SparseVector, ω)
 end
-@show "step 2 done"
-
 
 ###########################
 #
@@ -64,4 +58,4 @@ end
 
 res = boot_spKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples=300)
 
-@save "/scratch/midway2/mkolar/KLIEP/exp1/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res
+@save "/scratch/midway2/mkolar/KLIEP/exp2/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res
