@@ -1,7 +1,6 @@
 using KLIEPInference
 using JLD
 
-
 coverage = 0
 coverage_stud = 0
 not_done = 0
@@ -15,7 +14,10 @@ p = parse(Int,ARGS[1])
 sgn = parse(Int, ARGS[2])
 nx = parse(Int,ARGS[3])
 ny = parse(Int,ARGS[4])
-NUM_REP = parse(Int,ARGS[5])
+resPath = ARGS[5]
+
+# resPath = "/scratch/midway2/mkolar/KLIEP/exp1/oracle"
+NUM_REP = 1000
 
 
 
@@ -24,7 +26,7 @@ for rep=1:NUM_REP
     global coverage_stud
     global not_done
 
-    fname = "/scratch/midway2/mkolar/KLIEP/exp1/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld"
+    fname = "$(resPath)/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld"
 
     try 
       file = jldopen(fname, "r")
@@ -32,11 +34,9 @@ for rep=1:NUM_REP
       close(file)
 
       CI = simulCI(res)
-      # coverage += all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
       coverage += all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 
       CI = simulCIstudentized(res)
-      # coverage_stud += all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
       coverage_stud += all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
     catch
       not_done -= 1

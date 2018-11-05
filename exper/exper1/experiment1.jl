@@ -5,14 +5,14 @@ using SparseArrays
 using Random
 using JLD
 
-fname = ARGS[1]
-nx = parse(Int,ARGS[2])
-ny = parse(Int,ARGS[3])
-rep = parse(Int, ARGS[4])
 
-file = jldopen(fname, "r")
-p = read(file, "p")
-sgn = read(file, "sgn")
+p = parse(Int,ARGS[1])
+sgn = parse(Int,ARGS[2])
+nx = parse(Int,ARGS[3])
+ny = parse(Int,ARGS[4])
+rep = parse(Int, ARGS[5])
+
+file = jldopen("params_exp1_$(p)_$(sgn).jld", "r")
 θx = read(file, "θx")
 θy = read(file, "θy")
 close(file)
@@ -35,7 +35,7 @@ Y = rand(spl, ny)
 ###########################
 @show "step 1"
 m = div(p * (p - 1),  2)
-@show λ1 = 1.2 * sqrt(2. * log(m) / nx)
+@show λ1 = 2. * sqrt(log(m) / nx)
 θhat = spKLIEP(Ψx, Ψy, λ1, CD_KLIEP())
 spKLIEP_refit!(θhat, Ψx, Ψy)
 @show "step 1 done"
@@ -46,7 +46,7 @@ spKLIEP_refit!(θhat, Ψx, Ψy)
 #
 ###########################
 @show "step 2"
-@show λ2 = 1.2 * sqrt(2. * log(p) / ny)
+@show λ2 = 2. * sqrt(log(m) / ny)
 H = KLIEP_Hessian(θhat, Ψy)
 Hinv = Vector{SparseVector{Float64,Int64}}(undef, m)
 for row=1:m
