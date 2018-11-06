@@ -145,8 +145,8 @@ function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
     w ./= mean(w)
 
     # means
-    mux = mean(Ψx, dims = 2)
-    muy = mean(Ψy, weights(w), 2 )
+    mux = vec( mean(Ψx, dims = 2) )
+    muy = vec( mean(Ψy, weights(w), 2) )
 
     θb = Matrix{Float64}(undef, length(θhat), bootSamples)
 
