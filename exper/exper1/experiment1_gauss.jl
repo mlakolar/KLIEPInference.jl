@@ -64,4 +64,12 @@ end
 
 res = boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples=300)
 
-@save "/scratch/midway2/mkolar/KLIEP/exp1/gauss/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res
+
+dirName = "p_$(p)_sgn_$(sgn)_nx_$(nx)_ny_$(ny)"
+prefix = "/scratch/midway2/mkolar/KLIEP/exp1/gauss/$(dirName)"
+
+if !isdir(prefix)
+  mkpath(prefix)
+end
+
+@save "$(prefix)/res_$(rep).jld" θhat Hinv res
