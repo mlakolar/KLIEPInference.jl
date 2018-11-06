@@ -18,6 +18,7 @@ export
   Hinv_row,
 
   # inference
+  BootstrapEstimates,
   boot_KLIEP,
   boot_spKLIEP,
   boot_oracleKLIEP,

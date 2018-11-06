@@ -140,7 +140,7 @@ function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
     ny = size(Ψy, 2)
 
     # compute weights corresponding to rhat
-    w = transpose(Ψy) * θ
+    w = transpose(Ψy) * θhat
     w .= exp.(w)
     w ./= mean(w)
 
