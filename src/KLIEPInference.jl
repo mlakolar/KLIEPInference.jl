@@ -1,6 +1,6 @@
 module KLIEPInference
 
-using Distributions, LinearAlgebra, Statistics, SparseArrays
+using Distributions, LinearAlgebra, Statistics, SparseArrays, Random
 using StatsBase
 using ProximalBase, CoordinateDescent
 
