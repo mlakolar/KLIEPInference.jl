@@ -154,8 +154,8 @@ function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
     gx = Vector{Float64}(undef, nx)
     gy = Vector{Float64}(undef, ny)
 
-    tmp1 = Vector{Float64, m}
-    tmp2 = Vector{Float64, m}
+    tmp1 = Vector{Float64}(undef, m)
+    tmp2 = Vector{Float64}(undef, m)
     # bootstrap
     for b=1:bootSamples
         rand!(Normal(), gx)
