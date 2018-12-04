@@ -10,7 +10,7 @@ sgn = parse(Int,ARGS[2])
 numChanges = parse(Int,ARGS[3])
 lbInd = parse(Int,ARGS[4])
 
-lbArr = [0.3, 0.4, 0.5]
+lbArr = 0.0:.05:0.5
 lb = lbArr[lbInd]
 
 θx = chain(p, 5, 0.2, 0.4, sgn)
@@ -27,4 +27,4 @@ end
 @show ind_nz = findall(!iszero, Δ)
 @show Δ[ind_nz]
 
-@save "params_exp2_$(p)_$(sgn)_$(numChanges)_$(lbInd).jld" p sgn θx θy
+@save "/home/byolkim/graphs/params_exp2_$(p)_$(sgn)_$(numChanges)_$(lbInd).jld" p sgn θx θy

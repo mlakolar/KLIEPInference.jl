@@ -14,7 +14,7 @@ nx = parse(Int,ARGS[5])
 ny = parse(Int,ARGS[6])
 rep = parse(Int, ARGS[7])
 
-file = jldopen("params_exp2_$(p)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
+file = jldopen("/home/byolkim/graphs/params_exp2_$(p)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
 θx = read(file, "θx")
 θy = read(file, "θy")
 close(file)
@@ -59,6 +59,6 @@ end
 #
 ###########################
 
-res = boot_spKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples=300)
+res = boot_spKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples=1001)
 
-@save "/scratch/midway2/mkolar/KLIEP/exp2/res_$(p)_$(sgn)_$(numChanges)_$(lbInd)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res
+@save "/scratch/midway2/byolkim/power/res_$(p)_$(sgn)_$(numChanges)_$(lbInd)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res
