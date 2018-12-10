@@ -11,9 +11,4 @@
 module load parallel
 module load hdf5
 
-$para = "parallel -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume"
-$srun = "srun --exclusive -N1 -n1"
-$err = "--error=/scratch/midway2/mkolar/output/$SLURM_JOB_NAME.err.{1}"
-$out = "--output=/scratch/midway2/mkolar/output/$SLURM_JOB_NAME.out.{1}"
-
-$para $srun $err $out /home/mkolar/project-midway/julia-1.0.1/bin/julia experiment1.jl ${1} ${2} ${3} ${4} {1} ::: {1..1000}
+parallel --delay .2 -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume srun --exclusive -N1 -n1 --error=/scratch/midway2/mkolar/output/$SLURM_JOB_NAME.err.{1} --output=/scratch/midway2/mkolar/output/$SLURM_JOB_NAME.out.{1} /home/mkolar/project-midway/julia-1.0.1/bin/julia experiment1.jl ${1} ${2} ${3} ${4} {1} ::: {1..1000}

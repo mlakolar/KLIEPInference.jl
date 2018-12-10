@@ -7,11 +7,5 @@
 module load parallel
 module load hdf5
 
-[ ! -d $SCRATCH/$SLURM_JOB_NAME ] && mkdir $SCRATCH/$SLURM_JOB_NAME
+parallel -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume srun --exclusive -N1 -n1 --error=/scratch/midway2/mkolar/output/$SLURM_JOB_NAME.err.{1} --output=/scratch/midway2/mkolar/output/$SLURM_JOB_NAME.out.{1} /home/mkolar/project-midway/julia-1.0.1/bin/julia experiment2.jl ${1} ${2} ${3} ${4} ${5} ${6} {1} ::: {1..1000}
 
-para="parallel -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume"
-srun="srun --exclusive -N1 -n1"
-err="--error=$SCRATCH/$SLURM_JOB_NAME/$SLURM_JOB_NAME.err.{1}"
-out="--output=$SCRATCH/$SLURM_JOB_NAME/$SLURM_JOB_NAME.out.{1}"
-
-$para $srun $err $out /project/mkolar/julia-1.0.2/bin/julia experiment2.jl ${1} ${2} ${3} ${4} ${5} ${6} {1} ::: {1..1000}

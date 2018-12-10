@@ -1,6 +1,6 @@
 module KLIEPInference
 
-using Distributions, Statistics, SparseArrays
+using Distributions, LinearAlgebra, Statistics, SparseArrays, Random
 using StatsBase
 using ProximalBase, CoordinateDescent
 
@@ -18,9 +18,11 @@ export
   Hinv_row,
 
   # inference
+  BootstrapEstimates,
   boot_KLIEP,
   boot_spKLIEP,
   boot_oracleKLIEP,
+  boot_gaussKLIEP,
   simulCI,
   simulCIstudentized,
 
