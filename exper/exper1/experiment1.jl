@@ -11,6 +11,7 @@ sgn = parse(Int,ARGS[2])
 nx = parse(Int,ARGS[3])
 ny = parse(Int,ARGS[4])
 rep = parse(Int, ARGS[5])
+dir = ARGS[6]
 
 file = jldopen("params_exp1_$(p)_$(sgn).jld", "r")
 θx = read(file, "θx")
@@ -62,6 +63,7 @@ end
 #
 ###########################
 
-res = boot_spKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples=300)
+# res = boot_spKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples=300)
+res = boot_spKLIEP_full(Ψx, Ψy, θhat, Hinv; bootSamples=300)
 
-@save "/scratch/midway2/mkolar/KLIEP/exp1/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res
+@save "$(dir)/res_$(p)_$(sgn)_$(nx)_$(ny)_$(rep).jld" θhat Hinv res

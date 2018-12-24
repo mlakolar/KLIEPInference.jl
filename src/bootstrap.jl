@@ -31,6 +31,20 @@ function boot_KLIEP(Ψx, Ψy; bootSamples::Int64=300)
     BootstrapEstimates(θhat, θb)
 end
 
+function findSupp3(θfs, ω, j)
+    supp1 = findall(!iszero, θfs)
+    supp2 = findall(!iszero, ω)
+
+    supp3 = union(supp1, supp2)
+    pos_j = findfirst(isequal(j), supp3)
+    if pos_j == nothing
+        push!(supp3, j)
+    else
+        supp3[pos_j], supp3[end] = supp3[end], supp3[pos_j]
+    end
+    supp3
+end
+
 # Hinv = Vector{SparseVector{Float64,Int64}}(undef, m)
 function boot_spKLIEP(Ψx, Ψy, θfs, Hinv; bootSamples::Int64=300)
 
@@ -49,17 +63,8 @@ function boot_spKLIEP(Ψx, Ψy, θfs, Hinv; bootSamples::Int64=300)
     θhat = Vector{Float64}(undef, m)
     θb = Matrix{Float64}(undef, length(θhat), bootSamples)
 
-    supp1 = findall(!iszero, θfs)
     for j=1:m
-        supp2 = findall(!iszero, Hinv[j])
-
-        supp3 = union(supp1, supp2)
-        pos_j = findfirst(isequal(j), supp3)
-        if pos_j == nothing
-            push!(supp3, j)
-        else
-            supp3[pos_j], supp3[end] = supp3[end], supp3[pos_j]
-        end
+        supp3 = findSupp3(θfs, Hinv[j], j)
 
         # obtain θhat_j
         bΨx = Ψx[supp3, :]
@@ -81,6 +86,61 @@ function boot_spKLIEP(Ψx, Ψy, θfs, Hinv; bootSamples::Int64=300)
 
     BootstrapEstimates(θhat, θb)
 end
+
+function boot_spKLIEPfull(Ψx, Ψy, θfs, Hinv, λ1, λ2; bootSamples::Int64=300)
+
+    m, nx = size(Ψx)
+    ny = size(Ψy, 2)
+
+    θhat = Vector{Float64}(undef, m)
+    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
+
+    # compute third stage estimator first
+    for j=1:m
+        supp3 = findSupp3(θfs, Hinv[j], j)
+
+        # obtain θhat_j
+        bΨx = Ψx[supp3, :]
+        bΨy = Ψy[supp3, :]
+        θ = KLIEP(bΨx, bΨy, CD_KLIEP())
+        θhat[j] = θ[end]
+    end
+
+
+    x_ind = Vector{Int64}(undef, nx)
+    y_ind = Vector{Int64}(undef, ny)
+    Ψx_boot = similar(Ψx)
+    Ψy_boot = similar(Ψy)
+
+    for b=1:bootSamples
+        sample!(1:nx, x_ind)
+        sample!(1:ny, y_ind)
+
+        _fill_boot_Psi!(Ψx_boot, Ψx, x_ind)
+        _fill_boot_Psi!(Ψy_boot, Ψy, y_ind)
+
+        # first step
+        θfs_boot = deepcopy(θfs)
+        spKLIEP!(θfs_boot, Ψx_boot, Ψy_boot, λ1, CD_KLIEP())
+        spKLIEP_refit!(θfs_boot, Ψx_boot, Ψy_boot)
+
+        # second and third step
+        H_boot = KLIEP_Hessian(θfs_boot, Ψy_boot)
+        for j=1:m
+            ω = Hinv_row(H_boot, j, λ2)
+            supp3_boot = findSupp3(θfs_boot, ω, j)
+
+            bΨx_boot = Ψx_boot[supp3_boot, :]
+            bΨy_boot = Ψy_boot[supp3_boot, :]
+
+            θ = KLIEP(bΨx_boot, bΨy_boot, CD_KLIEP())
+            θb[j, b] = θ[end]
+        end
+    end
+
+    BootstrapEstimates(θhat, θb)
+end
+
 
 
 # S_delta --- support of Delta

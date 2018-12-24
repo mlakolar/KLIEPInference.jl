@@ -20,7 +20,7 @@ export
   # inference
   BootstrapEstimates,
   boot_KLIEP,
-  boot_spKLIEP,
+  boot_spKLIEP, boot_spKLIEPfull,
   boot_oracleKLIEP,
   boot_gaussKLIEP,
   simulCI,
