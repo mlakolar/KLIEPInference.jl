@@ -4,14 +4,12 @@ authors = ["Mladen Kolar <mkolar@gmail.com>"]
 version = "0.1.0"
 
 [deps]
-CoordinateDescent = "af3e6e94-ae3f-11e8-2d74-f149f5661110"
+CoordinateDescent = "c00ed354-b9be-54b8-8a23-c5ac771bc43a"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-MathOptInterfaceMosek = "0087ddc6-3964-5e57-817f-9937aefb0357"
 Mosek = "6405355b-0ac2-5fba-af84-adbd65488c0e"
-ProximalBase = "e46f183a-ae2f-11e8-253c-bfe2254e1c56"
+ProximalBase = "0a755509-c5b1-5d6f-9b24-59bcda3c37a3"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
