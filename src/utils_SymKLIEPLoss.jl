@@ -36,7 +36,7 @@ function CoordinateDescent.gradient(
   μx, Ψx, rx = f.μx, f.Ψx, f.rx
   μy, Ψy, ry = f.μy, f.Ψy, f.ry
 
-  -μx[j] + μy[j] + mean( exp.(rx) .* Ψx[j, :] ) / mean(exp, rx) + mean( exp.(ry) .* Ψy[j, :] ) / mean(exp, ry)
+  -μx[j] + μy[j] - mean( exp.(rx) .* Ψx[j, :] ) / mean(exp, rx) + mean( exp.(ry) .* Ψy[j, :] ) / mean(exp, ry)
 end
 
 function CoordinateDescent.descendCoordinate!(
@@ -50,14 +50,14 @@ function CoordinateDescent.descendCoordinate!(
 
     mean_exp_rx = mean(exp, rx)
     mean_exp_rx_Ψx = mean( exp.(rx) .* Ψx[j, :] )
-    mean_exp_rx_Ψx2 = mean( exp.(rx) .* Ψx[j, :].^2. )
+    mean_exp_rx_Ψx2 = mean( exp.(rx) .* Ψx[j, :].^2 )
 
     mean_exp_ry = mean(exp, ry)
     mean_exp_ry_Ψy = mean( exp.(ry) .* Ψy[j, :] )
-    mean_exp_ry_Ψy2 = mean( exp.(ry) .* Ψy[j, :].^2. )
+    mean_exp_ry_Ψy2 = mean( exp.(ry) .* Ψy[j, :].^2 )
 
-    @inbounds grad = -μx[j] + μy[j] + mean_exp_rx_Ψx / mean_exp_rx + mean_exp_ry_Ψy / mean_exp_ry
-    H = mean_exp_rx_Ψx2 / mean_exp_rx - mean_exp_rx_Ψx^2 / mean_exp_rx^2 + mean_exp_ry_Ψy2 / mean_exp_ry - mean_exp_ry_Ψy^2 / mean_exp_ry^2.
+    @inbounds grad = -μx[j] + μy[j] - mean_exp_rx_Ψx / mean_exp_rx + mean_exp_ry_Ψy / mean_exp_ry
+    H = mean_exp_rx_Ψx2 / mean_exp_rx - mean_exp_rx_Ψx^2 / mean_exp_rx^2 + mean_exp_ry_Ψy2 / mean_exp_ry - mean_exp_ry_Ψy^2 / mean_exp_ry^2
 
     @inbounds oldVal = x[j]
     @inbounds x[j] -= grad / H
@@ -76,9 +76,9 @@ end
 
 
 function SymKLIEP_Hessian(θ, Ψx, Ψy)
-    m, n = size(Ψy)
+    m, ny = size(Ψy)
 
-    wx = transpose(Ψx) *-θ
+    wx =-transpose(Ψx) * θ
     wx .= exp.(wx)
     wx ./= mean(wx)
 
