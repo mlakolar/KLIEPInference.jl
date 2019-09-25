@@ -1,5 +1,3 @@
-# Question: Should CD_SymKLIEP be a different type?
-
 struct CD_SymKLIEP <: KLIEPSolver end
 
 SymKLIEP(Ψx, Ψy, ::CD_SymKLIEP) = SymKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy)
