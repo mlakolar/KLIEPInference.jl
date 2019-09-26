@@ -23,7 +23,7 @@ CoordinateDescent.numCoordinates(f::CDSymKLIEPLoss) = f.p
 
 function CoordinateDescent.initialize!(f::CDSymKLIEPLoss, x::SparseIterate)
     mul!(f.rx, transpose(f.Ψx), x)
-    f.rx *= -1.
+    f.rx .*= -1.
     
     mul!(f.ry, transpose(f.Ψy), x)
 
