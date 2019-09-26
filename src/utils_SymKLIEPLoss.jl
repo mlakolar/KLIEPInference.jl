@@ -22,7 +22,9 @@ end
 CoordinateDescent.numCoordinates(f::CDSymKLIEPLoss) = f.p
 
 function CoordinateDescent.initialize!(f::CDSymKLIEPLoss, x::SparseIterate)
-    mul!(f.rx, transpose(f.Ψx),-x)
+    mul!(f.rx, transpose(f.Ψx), x)
+    f.rx *= -1.
+    
     mul!(f.ry, transpose(f.Ψy), x)
 
     nothing
@@ -78,7 +80,7 @@ end
 function SymKLIEP_Hessian(θ, Ψx, Ψy)
     m, ny = size(Ψy)
 
-    wx =-transpose(Ψx) * θ
+    wx = -transpose(Ψx) * θ
     wx .= exp.(wx)
     wx ./= mean(wx)
 
