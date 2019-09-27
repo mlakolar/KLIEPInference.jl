@@ -6,12 +6,14 @@ function KLIEP_debias(
     Ψy::Matrix{Float64},)
 
     μx = vec(mean(Ψx, dims=2))
-    ry = zeros(size(Ψy,2))
-    mul!(ry, transpose(Ψy), θ)
+    wy = zeros(size(Ψy,2))
+    mul!(wy, transpose(Ψy), θ)
+    wy .= exp.(wy)
+    wy ./= mean(wy)
 
     θ1 = θ[ind]
     for k in ω.nzind
-        θ1 += ω[k] * (μx[k] - mean( exp.(ry) .* Ψy[k, :] ) / mean(exp, ry))
+        θ1 += ω[k] * ( μx[k] - mean( wy .* Ψy[k, :] ) )
     end
     return θ1
 end
@@ -26,16 +28,20 @@ function SymKLIEP_debias(
     μx = vec(mean(Ψx, dims=2))
     μy = vec(mean(Ψy, dims=2))
 
-    rx = zeros(size(Ψx,2))
-    mul!(rx, transpose(Ψx), θ)
-    rx .*= -1.
+    wx = zeros(size(Ψx,2))
+    mul!(wx, transpose(Ψx), θ)
+    wx .*= -1.
+    wx .= exp.(wx)
+    wx ./= mean(wx)
 
-    ry = zeros(size(Ψy,2))
-    mul!(ry, transpose(Ψy), θ)
+    wy = zeros(size(Ψy,2))
+    mul!(wy, transpose(Ψy), θ)
+    wy .= exp.(wy)
+    wy ./= mean(wy)
 
     θ1 = θ[ind]
     for k in ω.nzind
-        θ1 += ω[k] * (μx[k] - μy[k] + mean( exp.(rx) .* Ψx[k, :] ) / mean(exp, rx) - mean( exp.(ry) .* Ψy[k, :] ) / mean(exp, ry))
+        θ1 += ω[k] * ( μx[k] - μy[k] + mean( wx .* Ψx[k, :] ) - mean( wy .* Ψy[k, :] ) )
     end
     return θ1
 end
