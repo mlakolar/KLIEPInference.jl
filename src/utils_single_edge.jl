@@ -68,8 +68,10 @@ function KLIEP_var(
     # compute scaled data
     Ψxsub = Ψx[supp, :]
     Ψysub = Ψy[supp, :]
-    for k = 1:s
-        Ψysub[k, :] *= wy[k]
+    for j = 1:ny
+        for k = 1:s
+            Ψysub[k, j] *= wy[j]
+        end
     end
 
     # compute sample covariances
@@ -87,7 +89,6 @@ function KLIEP_var(
     return σhat2
 end
 
-# variance: dense ω
 function KLIEP_var(
     Ψx::Matrix{Float64},
     Ψy::Matrix{Float64},
@@ -105,8 +106,10 @@ function KLIEP_var(
 
     # compute scaled data
     Ψyw = zeros(p,ny)
-    for k = 1:p
-        Ψyw[k, :] = wy[k] * Ψy[k, :]
+    for j = 1:ny
+        for k = 1:s
+            Ψyw[k, j] = wy[j] * Ψy[k, j]
+        end
     end
 
     # compute sample covariances
@@ -150,13 +153,17 @@ function SymKLIEP_var(
 
     # compute scaled data
     Ψxw = Ψx[supp, :]
-    for k = 1:s
-        Ψxw[k, :] *= wy[k]
+    for i = 1:nx
+        for k = 1:s
+            Ψxw[k, i] *= wy[i]
+        end
     end
 
     Ψyw = Ψy[supp, :]
-    for k = 1:s
-        Ψyw[k, :] *= wy[k]
+    for j = 1:ny
+        for k = 1:s
+            Ψyw[k, j] *= wy[j]
+        end
     end
 
     # compute sample covariances
@@ -197,13 +204,17 @@ function SymKLIEP_var(
 
     # compute scaled data
     Ψxw = zeros(p,nx)
-    for k = 1:p
-        Ψxw[k, :] = Ψx[k, :] * wx[k]
+    for i = 1:nx
+        for k = 1:p
+            Ψxw[k, i] = Ψx[k, i] * wx[i]
+        end
     end
 
     Ψyw = zeros(p,ny)
-    for k = 1:p
-        Ψyw[k, :] = Ψy[k, :] * wy[k]
+    for j = 1:ny
+        for k = 1:p
+            Ψyw[k, j] = Ψy[k, j] * wy[j]
+        end
     end
 
     # compute sample covariances
