@@ -89,6 +89,7 @@ function KLIEP_var(
     return σhat2
 end
 
+# variance: dense ω
 function KLIEP_var(
     Ψx::Matrix{Float64},
     Ψy::Matrix{Float64},
@@ -107,7 +108,7 @@ function KLIEP_var(
     # compute scaled data
     Ψyw = zeros(p,ny)
     for j = 1:ny
-        for k = 1:s
+        for k = 1:p
             Ψyw[k, j] = wy[j] * Ψy[k, j]
         end
     end
