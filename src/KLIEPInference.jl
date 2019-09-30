@@ -12,9 +12,10 @@ export
 
   # KLIEP solvers
   KLIEPSolver,
-  CD_KLIEP,
-  KLIEP, KLIEP!,
+  CD_KLIEP, CD_SymKLIEP,
+  KLIEP, KLIEP!, SymKLIEP, SymKLIEP!
   spKLIEP, spKLIEP!, spKLIEP_refit!,
+  spSymKLIEP, spSymKLIEP!, spSymKLEIP_refit!,
   Hinv_row,
 
   # inference
@@ -28,12 +29,17 @@ export
 
   # utils
   Ψising,
-  KLIEP_Hessian,
+  KLIEP_Hessian, SymKLIEP_Hessian,
+  KLIEP_debias, SymKLIEP_debias,
+  KLIEP_var, SymKLIEP_var,
   unpack
 
 include("utils.jl")
+include("utils_single_edge.jl")
+include("utils_SymKLIEPLoss.jl")
 include("sampler.jl")
 include("solver.jl")
+include("solver_SymKLIEP.jl")
 include("bootstrap.jl")
 
 

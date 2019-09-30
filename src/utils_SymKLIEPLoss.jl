@@ -24,21 +24,21 @@ CoordinateDescent.numCoordinates(f::CDSymKLIEPLoss) = f.p
 function CoordinateDescent.initialize!(f::CDSymKLIEPLoss, x::SparseIterate)
     mul!(f.rx, transpose(f.Ψx), x)
     f.rx .*= -1.
-    
+
     mul!(f.ry, transpose(f.Ψy), x)
 
     nothing
 end
 
 function CoordinateDescent.gradient(
-  f::CDSymKLIEPLoss,
-  x::SparseIterate,
-  j::Int64)
+    f::CDSymKLIEPLoss,
+    x::SparseIterate,
+    j::Int64)
 
-  μx, Ψx, rx = f.μx, f.Ψx, f.rx
-  μy, Ψy, ry = f.μy, f.Ψy, f.ry
+    μx, Ψx, rx = f.μx, f.Ψx, f.rx
+    μy, Ψy, ry = f.μy, f.Ψy, f.ry
 
-  -μx[j] + μy[j] - mean( exp.(rx) .* Ψx[j, :] ) / mean(exp, rx) + mean( exp.(ry) .* Ψy[j, :] ) / mean(exp, ry)
+    -μx[j] + μy[j] - mean( exp.(rx) .* Ψx[j, :] ) / mean(exp, rx) + mean( exp.(ry) .* Ψy[j, :] ) / mean(exp, ry)
 end
 
 function CoordinateDescent.descendCoordinate!(
