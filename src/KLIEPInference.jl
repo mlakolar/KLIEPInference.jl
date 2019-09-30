@@ -15,7 +15,7 @@ export
   CD_KLIEP, CD_SymKLIEP,
   KLIEP, KLIEP!, SymKLIEP, SymKLIEP!,
   spKLIEP, spKLIEP!, spKLIEP_refit!,
-  spSymKLIEP, spSymKLIEP!, spSymKLEIP_refit!,
+  spSymKLIEP, spSymKLIEP!, spSymKLIEP_refit!,
   Hinv_row,
 
   # inference
