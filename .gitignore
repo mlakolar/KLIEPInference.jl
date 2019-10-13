@@ -6,3 +6,4 @@ deps/deps.jl
 *.out
 *~
 *.log
+*.DS_Store
