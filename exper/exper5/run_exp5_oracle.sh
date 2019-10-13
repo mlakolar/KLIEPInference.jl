@@ -4,7 +4,7 @@
 
 ## Call with sbatch --job-name=exp5_oracle_${graphtype} run_exp5_oracle.sh ${graphtype} ${idx}
 
-#SBATCH --partition=standard
+#SBATCH --partition=gpu
 #SBATCH --ntasks=28
 #SBATCH --time=48:00:00
 #SBATCH --exclusive

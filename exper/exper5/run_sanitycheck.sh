@@ -4,7 +4,7 @@
 
 ## Call with sbatch --job-name=sanitycheck_${expername}_${graphtype} run_sanitycheck.sh ${expername} ${graphtype} ${idx}
 
-#SBATCH --partition=standard
+#SBATCH --partition=gpu
 #SBATCH --ntasks=28
 #SBATCH --time=48:00:00
 #SBATCH --exclusive
