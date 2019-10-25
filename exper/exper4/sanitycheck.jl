@@ -9,9 +9,6 @@ using JLD
 using LinearAlgebra
 using SparseArrays
 
-using ProximalBase, CoordinateDescent
-include("/home/bkim6/code/refit_to_supp.jl")
-
 file = jldopen("/home/bkim6/ising/$(graphtype)/$(graphtype)_rep_$(rep).jld", "r")
 X = read(file, "Y")
 X = X[:, 1:150]
@@ -43,7 +40,7 @@ for t = 1:5
     θtemp = convert(SparseVector, θtemp)
     supp = union(idx, θtemp.nzind)
     θtemp = SparseIterate(θtemp)
-    KLIEP_refit!(θtemp, Ψx, Ψy, supp)
+    spKLIEP_refit!(θtemp, Ψx, Ψy, supp)
 
     H = KLIEP_Hessian(θtemp, Ψy)
     ω = Hinv_row(H, idx, λ2)
@@ -60,7 +57,7 @@ for t = 1:5
 
     supp = union(idx, θtemp.nzind, ω.nzind)
     θtemp = SparseIterate(θtemp)
-    KLIEP_refit!(θtemp, Ψx, Ψy, supp)
+    spKLIEP_refit!(θtemp, Ψx, Ψy, supp)
     ω = SparseIterate(ω)
     Hinv_row_refit!(ω, H, idx, supp)
 
@@ -73,4 +70,4 @@ end
 if ~ispath("/home/bkim6/sanity/$(graphtype)/")
     mkpath("/home/bkim6/sanity/$(graphtype)/")
 end
-@save "/home/bkim6/sanity/$(graphtype)/sanitycheck_y_rep_$(rep).jld" θhat σhat
+@save "/home/bkim6/sanity/$(graphtype)/$(graphtype)_rep_$(rep).jld" θhat σhat

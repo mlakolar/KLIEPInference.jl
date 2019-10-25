@@ -2,7 +2,7 @@
 
 #SBATCH --account=pi-mkolar
 
-## Call with sbatch --job-name=sanitycheck_${expername}_${graphtype} run_sanitycheck.sh ${expername} ${graphtype} ${idx}
+## Call this with sbatch --job-name=${expername}_${graphtype} run_exp4_oracle.sh ${graphdir} ${graphtype} ${idx} ${n}
 
 #SBATCH --partition=gpu
 #SBATCH --ntasks=28
@@ -16,4 +16,4 @@ mkdir -p /scratch/bkim6/$SLURM_JOB_NAME/
 
 module load julia/1.1.1
 
-parallel --delay .2 -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume srun --exclusive -N1 -n1 $ERR $OUT julia sanitycheck_${1}.jl ${2} ${3} {1} ::: {1..1000}
+parallel --delay .2 -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume srun --exclusive -N1 -n1 $ERR $OUT julia exp4_oracle.jl ${1} ${2} ${3} {1} ${4} ${4} ::: {1..1000}

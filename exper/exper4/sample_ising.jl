@@ -3,10 +3,6 @@ rep = parse(Int,ARGS[2])
 nx = parse(Int,ARGS[3])
 ny = parse(Int,ARGS[4])
 
-if isfile("/home/bkim6/balanced/$(graphtype)/$(graphtype)_rep_$(rep).jld")
-    exit()
-end
-
 using KLIEPInference
 using Distributions
 using Random
@@ -26,9 +22,11 @@ close(file)
 m = size(Θx, 1)
 p = div(m * (m-1), 2)
 θx = zeros(p)
-θy = zeros(p)
 for (i,j) in zip(findnz(Θx)...)
     θx[trimap(i,j)] = Θx[i,j]
+end
+θy = zeros(p)
+for (i,j) in zip(findnz(Θy)...)
     Θy[trimap(i,j)] = Θy[i,j]
 end
 

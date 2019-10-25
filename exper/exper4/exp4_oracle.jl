@@ -4,14 +4,13 @@ graphdir = ARGS[1]
 graphtype = ARGS[2]
 idx = parse(Int, ARGS[3])
 rep = parse(Int, ARGS[4])
+nx = parse(Int, ARGS[5])
+ny = parse(Int, ARGS[6])
 
 using KLIEPInference
 using JLD
 using LinearAlgebra
 using SparseArrays
-
-using ProximalBase, CoordinateDescent
-include("/home/bkim6/code/refit_to_supp.jl")
 
 file = jldopen("/home/bkim6/graphs/$(graphtype).jld", "r")
 Θx = read(file, "Θx")
@@ -30,8 +29,11 @@ X = read(file, "X")
 Y = read(file, "Y")
 close(file)
 
-Ψx = Ψising(X)
-Ψy = Ψising(Y)
+X = X[:, 1:nx]
+Y = Y[:, 1:ny]
+
+Ψx = Ψising(X .== 1.)
+Ψy = Ψising(Y .== 1.)
 
 Ψx = Ψx[supp, :]
 Ψy = Ψy[supp, :]
@@ -39,7 +41,7 @@ close(file)
 θhat = zeros(3)
 σhat = zeros(3)
 
-# KLIEP
+# Base y
 θtemp = KLIEP(Ψx, Ψy, CD_KLIEP())
 θhat[1] = θtemp[δ][1]
 
@@ -47,7 +49,7 @@ H = KLIEP_Hessian(θtemp, Ψy)
 ω = H\δ
 σhat[1] = KLIEP_var(Ψx, Ψy, θtemp, ω)
 
-# KLIEP
+# Base x
 θtemp = KLIEP(Ψy, Ψx, CD_KLIEP())
 θhat[2] = -θtemp[δ][1]
 
