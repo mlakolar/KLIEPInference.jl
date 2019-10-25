@@ -41,7 +41,21 @@ function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy)
     coordinateDescent!(x, f, g)
 end
 
+function spKLIEP_refit!(
+    x::SparseIterate,
+    Ψx::Matrix{Float64},
+    Ψy::Matrix{Float64},
+    supp::Vector{Int64})
 
+    w = ones(Float64, length(x)) * 1e10
+    for k in supp
+        w[k] = 0.
+    end
+
+    f = CDKLIEPLoss(Ψx, Ψy)
+    g = ProxL1(1., w)
+    coordinateDescent!(x, f, g)
+end
 
 function Hinv_row(H, row, λ0)
     m = size(H, 1)
@@ -66,4 +80,24 @@ function Hinv_row(H, row, λ0)
     end
 
     x
+end
+
+function Hinv_row_refit!(
+    x::SparseIterate,
+    H::Matrix{Float64},
+    idx::Int64,
+    supp::Vector{Int64})
+
+    m = length(x)
+    δ = zeros(m)
+    δ[idx] = -1.0
+
+    w = ones(Float64, m) * 1e10
+    for k in supp
+        w[k] = 0.
+    end
+
+    f = CDQuadraticLoss(H, δ)
+    g = ProxL1(1., w)
+    coordinateDescent!(x, f, g)
 end
