@@ -51,7 +51,7 @@ function tuneλ(λ::Vector{Float64}, Ψx, Ψy, idx::Int64, a::Float64=0.9, nrep:
     θhat[2,:,:] = broadcast(/, broadcast(-, θhat[2,:,:], θ0[2,:]), std(θhat[2,:,:],dims=2))
 
     KSstats = zeros(Float64, 2, nλ)
-    for t=1:nλ
+    for t = 1:nλ
         KSstats[1,t] = HypothesisTests.ksstats(θhat[1,t,:], Normal())[2]
         KSstats[2,t] = HypothesisTests.ksstats(θhat[2,t,:], Normal())[2]
     end

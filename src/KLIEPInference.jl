@@ -3,6 +3,7 @@ module KLIEPInference
 using Distributions, LinearAlgebra, Statistics, SparseArrays, Random
 using StatsBase
 using ProximalBase, CoordinateDescent
+using Printf
 
 export
   IsingSampler,
@@ -38,8 +39,5 @@ include("solver.jl")
 include("debias.jl")
 include("stderr.jl")
 include("tune.jl")
-
-
-
 
 end # module
