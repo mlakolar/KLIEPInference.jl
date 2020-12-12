@@ -29,7 +29,7 @@ export
   # other
   Ψising, unpack, pack,
   KLIEP_Hessian,
-  debias_KLIEP, stderr_KLIEP, tuneλ,
+  debias_KLIEP, stderr_KLIEP, tuneλ
 
 include("bootstrap.jl")
 include("debias.jl")
