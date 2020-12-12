@@ -31,7 +31,6 @@ function _maxabs(a, b)
     maximum(x -> abs(x[1]-x[2]), zip(a, b))
 end
 
-
 # maps (i, j) coordinate of a symmetric matrix to a packed format
 # diagonal of the matrix is not included
 # lower triangular part is mapped row by row
@@ -50,6 +49,7 @@ function itrimap(k::Integer)
     CartesianIndex(i, j)
 end
 
+# vector -> symmetric matrix
 function unpack(θ)
     m = length(θ)
     p = convert(Int, ceil((1. + sqrt(1. + 8. * m)) / 2.))
@@ -58,6 +58,19 @@ function unpack(θ)
         out[itrimap(i)] = θ[i]
     end
     out + out'
+end
+
+# symmetric matrix -> vector
+function pack(Θ)
+    m = size(Θ, 1)
+    p = div(m * (m - 1), 2)
+    out = zeros(Float64, p)
+    for j=1:(m-1)
+        for i=(j+1):m
+            out[trimap(i,j)] = Θ[i,j]
+        end
+    end
+    out
 end
 
 ####################################
@@ -96,7 +109,6 @@ function CoordinateDescent.gradient(
 
   -μx[j] + mean( exp.(r) .* Ψy[j, :] ) / mean(exp, r)
 end
-
 
 function CoordinateDescent.descendCoordinate!(
   f::CDKLIEPLoss,
