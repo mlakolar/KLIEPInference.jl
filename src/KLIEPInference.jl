@@ -3,7 +3,6 @@ module KLIEPInference
 using Distributions, LinearAlgebra, Statistics, SparseArrays, Random
 using StatsBase
 using ProximalBase, CoordinateDescent
-using Printf
 
 export
   IsingSampler,
