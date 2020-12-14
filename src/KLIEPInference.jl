@@ -38,6 +38,5 @@ include("sampler.jl")
 include("solver.jl")
 include("debias.jl")
 include("stderr.jl")
-include("tune.jl")
 
 end # module
