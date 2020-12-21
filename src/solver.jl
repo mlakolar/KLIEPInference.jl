@@ -10,7 +10,6 @@ KLIEP(Ψx, Ψy, ::CD_KLIEP) = KLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy)
 function KLIEP!(x::SparseIterate, Ψx, Ψy)
     f = CDKLIEPLoss(Ψx, Ψy)
     g = ProxZero()
-
     coordinateDescent!(x, f, g)
 end
 
@@ -41,7 +40,7 @@ function _compute_loadings(x, Ψx, Ψy)
 
     s = zeros(p)
     for k = 1:p
-        s[k] = sqrt((var(Ψx[k,:]) / nx) + var(Ψyw[k,:]) / ny))
+        s[k] = sqrt((var(Ψx[k,:]) / nx) + (var(Ψyw[k,:]) / ny))
     end
 
     return s
@@ -64,7 +63,6 @@ end
 function spKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
     f = CDKLIEPLoss(Ψx, Ψy)
     g = ProxL1(λ)
-
     coordinateDescent!(x, f, g)
 end
 
