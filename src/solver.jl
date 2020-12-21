@@ -95,6 +95,7 @@ function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, supp::Vector{Int64})
     coordinateDescent!(x, f, g)
 end
 
+
 function Hinv_row(H, row, λ0)
     m = size(H, 1)
     e = zeros(m)
@@ -124,7 +125,7 @@ end
 function Hinv_row_refit!(x::SparseIterate, H, row, supp::Vector{Int64})
     m = length(x)
     δ = zeros(m)
-    δ[idx] = -1.0
+    δ[row] = -1.0
 
     w = ones(Float64, m) * 1e10
     for k in supp
