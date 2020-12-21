@@ -14,8 +14,52 @@ function KLIEP!(x::SparseIterate, Ψx, Ψy)
     coordinateDescent!(x, f, g)
 end
 
-spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP) =
-  spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
+
+function spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP; loadings=true)
+    if loadings
+        spKLIEP_scaled!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
+    else
+        spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
+    end
+end
+
+function _compute_loadings(x, Ψx, Ψy)
+    p, nx = size(Ψx)
+    ny = size(Ψy, 2)
+
+    wy = zeros(ny)
+    mul!(wy, transpose(Ψy), x)
+    wy .= exp.(wy)
+    wy ./= mean(wy)
+
+    Ψyw = zeros(p, ny)
+    for j = 1:ny
+        for k = 1:p
+            Ψyw[k,j] = wy[j] * Ψy[k,j]
+        end
+    end
+
+    s = zeros(p)
+    for k = 1:p
+        s[k] = sqrt((var(Ψx[k,:]) / nx) + var(Ψyw[k,:]) / ny))
+    end
+
+    return s
+end
+
+function spKLIEP_scaled!(x::SparseIterate, Ψx, Ψy, λ)
+    f = CDKLIEPLoss(Ψx, Ψy)
+
+    γ = _compute_loadings(x, Ψx, Ψy)
+    g = ProxL1(λ, γ)
+    coordinateDescent!(x, f, g)
+
+    γ = _compute_loadings(x, Ψx, Ψy)
+    g = ProxL1(λ, γ)
+    coordinateDescent!(x, f, g, CDOptions(; warmStart=true))
+
+    return x
+end
 
 function spKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
     f = CDKLIEPLoss(Ψx, Ψy)
@@ -41,13 +85,9 @@ function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy)
     coordinateDescent!(x, f, g)
 end
 
-function spKLIEP_refit!(
-    x::SparseIterate,
-    Ψx::Matrix{Float64},
-    Ψy::Matrix{Float64},
-    supp::Vector{Int64})
-
+function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, supp::Vector{Int64})
     w = ones(Float64, length(x)) * 1e10
+
     for k in supp
         w[k] = 0.
     end
@@ -60,7 +100,7 @@ end
 function Hinv_row(H, row, λ0)
     m = size(H, 1)
     e = zeros(m)
-    e[row] = -1.0
+    e[row] = -1.
 
     x = SparseIterate(m)
     x[row] = 1.
@@ -75,7 +115,7 @@ function Hinv_row(H, row, λ0)
         σnew = sqrt( dot(x, H * x) )
 
         if abs(σnew - σ) / σ < 1e-3
-          break
+            break
         end
         σ = σnew
     end
@@ -83,12 +123,7 @@ function Hinv_row(H, row, λ0)
     x
 end
 
-function Hinv_row_refit!(
-    x::SparseIterate,
-    H::Matrix{Float64},
-    idx::Int64,
-    supp::Vector{Int64})
-
+function Hinv_row_refit!(x::SparseIterate, H, row, supp::Vector{Int64})
     m = length(x)
     δ = zeros(m)
     δ[idx] = -1.0
