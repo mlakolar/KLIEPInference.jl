@@ -15,7 +15,7 @@ export
   CD_KLIEP,
   KLIEP, KLIEP!,
   spKLIEP, spKLIEP!, spKLIEP_refit!,
-  Hinv_row, Hinv_row_refit!,
+  Hinv_row,
 
   # inference
   BootstrapEstimates,
@@ -29,7 +29,8 @@ export
   # other
   Ψising, unpack, pack,
   KLIEP_Hessian,
-  debias_KLIEP, stderr_KLIEP
+  KLIEP_debias1, KLIEP_debias2,
+  KLIEP_stderr
 
 include("utils.jl")
 include("bootstrap.jl")

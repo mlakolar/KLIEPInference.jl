@@ -4,7 +4,6 @@ struct CD_KLIEP <: KLIEPSolver end
 
 ### interface
 
-
 KLIEP(Ψx, Ψy, ::CD_KLIEP) = KLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy)
 
 function KLIEP!(x::SparseIterate, Ψx, Ψy)
@@ -12,7 +11,6 @@ function KLIEP!(x::SparseIterate, Ψx, Ψy)
     g = ProxZero()
     coordinateDescent!(x, f, g)
 end
-
 
 function spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP; loadings=true)
     if loadings
@@ -26,24 +24,24 @@ function _compute_loadings(x, Ψx, Ψy)
     p, nx = size(Ψx)
     ny = size(Ψy, 2)
 
-    wy = zeros(ny)
-    mul!(wy, transpose(Ψy), x)
-    wy .= exp.(wy)
-    wy ./= mean(wy)
+    r = zeros(ny)
+    mul!(r, transpose(Ψy), x)
+    r .= exp.(r)
+    r ./= mean(r)
 
-    Ψyw = zeros(p, ny)
+    Ψyr = zeros(p, ny)
     for j = 1:ny
         for k = 1:p
-            Ψyw[k,j] = wy[j] * Ψy[k,j]
+            Ψyr[k,j] = r[j] * Ψy[k,j]
         end
     end
 
     s = zeros(p)
     for k = 1:p
-        s[k] = sqrt((var(Ψx[k,:]) / nx) + (var(Ψyw[k,:]) / ny))
+        s[k] = sqrt((var(Ψx[k,:]) / nx) + (var(Ψyr[k,:]) / ny))
     end
 
-    return s
+    s
 end
 
 function spKLIEP_scaled!(x::SparseIterate, Ψx, Ψy, λ)
@@ -56,8 +54,6 @@ function spKLIEP_scaled!(x::SparseIterate, Ψx, Ψy, λ)
     γ = _compute_loadings(x, Ψx, Ψy)
     g = ProxL1(λ, γ)
     coordinateDescent!(x, f, g, CDOptions(; warmStart=true))
-
-    return x
 end
 
 function spKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
@@ -67,21 +63,6 @@ function spKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
 end
 
 spKLIEP!(x::SparseIterate, f::CDKLIEPLoss, g::ProxL1) = coordinateDescent!(x, f, g)
-
-function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy)
-    m = length(x)
-    ω = ones(Float64, m) * 1e10
-
-    for i=1:m
-        if !iszero(x[i])
-            ω[i] = 0.
-        end
-    end
-
-    f = CDKLIEPLoss(Ψx, Ψy)
-    g = ProxL1(1., ω)
-    coordinateDescent!(x, f, g)
-end
 
 function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, supp::Vector{Int64})
     w = ones(Float64, length(x)) * 1e10
@@ -95,6 +76,7 @@ function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, supp::Vector{Int64})
     coordinateDescent!(x, f, g)
 end
 
+spKLIEP_refit!(x::SparseIterate, Ψx, Ψy) = spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, findall(!iszero, x))
 
 function Hinv_row(H, row, λ0)
     m = size(H, 1)
@@ -120,19 +102,4 @@ function Hinv_row(H, row, λ0)
     end
 
     x
-end
-
-function Hinv_row_refit!(x::SparseIterate, H, row, supp::Vector{Int64})
-    m = length(x)
-    δ = zeros(m)
-    δ[row] = -1.0
-
-    w = ones(Float64, m) * 1e10
-    for k in supp
-        w[k] = 0.
-    end
-
-    f = CDQuadraticLoss(H, δ)
-    g = ProxL1(1., w)
-    coordinateDescent!(x, f, g)
 end
