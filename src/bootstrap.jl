@@ -242,7 +242,7 @@ end
 
 
 
-function simulCI(straps::BootstrapEstimates, α::Float64=0.95)
+function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
     m, bootSamples = size(straps.θb)
 
     infNormDist = Vector{Float64}(undef, bootSamples)
@@ -251,14 +251,14 @@ function simulCI(straps::BootstrapEstimates, α::Float64=0.95)
     for b=1:bootSamples
         infNormDist[b] = norm_diff(straps.θhat, view(straps.θb, :, b), Inf)
     end
-    x = quantile!(infNormDist, α)
+    x = quantile!(infNormDist, 1 - α)
     CI[:, 1] .= straps.θhat .- x
     CI[:, 2] .= straps.θhat .+ x
 
     CI
 end
 
-function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.95)
+function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
     m, bootSamples = size(straps.θb)
 
     infNormDist = Vector{Float64}(undef, bootSamples)
@@ -271,7 +271,7 @@ function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.95)
         tmp .= (straps.θhat .- straps.θb[:, b]) ./ w
         infNormDist[b] = norm(tmp, Inf)
     end
-    x = quantile!(infNormDist, α)
+    x = quantile!(infNormDist, 1 - α)
     @. CI[:, 1] = straps.θhat - x * w
     @. CI[:, 2] = straps.θhat + x * w
 
