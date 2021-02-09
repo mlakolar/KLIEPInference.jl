@@ -106,7 +106,6 @@ function boot_spKLIEPfull(Ψx, Ψy, θfs, Hinv, λ1, λ2; bootSamples::Int64=300
         θhat[j] = θ[end]
     end
 
-
     x_ind = Vector{Int64}(undef, nx)
     y_ind = Vector{Int64}(undef, ny)
     Ψx_boot = similar(Ψx)
@@ -140,8 +139,6 @@ function boot_spKLIEPfull(Ψx, Ψy, θfs, Hinv, λ1, λ2; bootSamples::Int64=300
 
     BootstrapEstimates(θhat, θb)
 end
-
-
 
 # S_delta --- support of Delta
 function boot_oracleKLIEP(Ψx, Ψy, S_delta; bootSamples::Int64=300)
@@ -190,7 +187,6 @@ function boot_oracleKLIEP(Ψx, Ψy, S_delta; bootSamples::Int64=300)
 
     BootstrapEstimates(θhat, θb)
 end
-
 
 function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
 
@@ -278,7 +274,6 @@ function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
     CI
 end
 
-
 function _fill_boot_Psi!(bΨ, Ψ, b_ind)
   m, n = size(Ψ)
   for col=1:n
@@ -286,4 +281,45 @@ function _fill_boot_Psi!(bΨ, Ψ, b_ind)
           bΨ[row, col] = Ψ[row, b_ind[col]]
       end
   end
+end
+
+function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
+    p, nx = size(Ψx)
+    ny = size(Ψy, 2)
+    supp = findall(!iszero, θ)
+
+    θ1 = Vector{Float64}(undef, p)
+    bθ1 = Matrix{Float64}(undef, p, bootSamples)
+
+    x_ind = Matrix{Int16}(undef, nx, bootSamples)
+    y_ind = Matrix{Int16}(undef, ny, bootSamples)
+
+    for b = 1:bootSamples
+        sample!(1:nx, view(x_ind, :, b))
+        sample!(1:ny, view(y_ind, :, b))
+    end
+
+    for k = 1:p
+        suppk = sort(union(supp, k))
+
+        θk = copy(θ)
+        θk[suppk] = KLIEP!(θk[suppk], Ψx[suppk, :], Ψy[suppk, :])
+
+        θ1[k] = KLIEP_debias1(Ψx, Ψy, θk, Hinv[k], k)
+
+        bΨx = similar(Ψx)
+        bΨy = similar(Ψy)
+
+        for b = 1:bootSamples
+            _fill_boot_Psi!(bΨx, Ψx, view(x_ind, :, b))
+            _fill_boot_Psi!(bΨy, Ψy, view(y_ind, :, b))
+
+            θk = copy(θ)
+            θk[suppk] = KLIEP!(θk[suppk], bΨx[suppk, :], bΨy[suppk, :])
+
+            bθ1[k, b] = KLIEP_debias1(bΨx, bΨy, θk, Hinv[k], k)
+        end
+    end
+
+    return BootstrapEstimates(θ1, bθ1)
 end

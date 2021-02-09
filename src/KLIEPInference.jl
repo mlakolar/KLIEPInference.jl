@@ -19,6 +19,7 @@ export
 
   # inference
   BootstrapEstimates,
+  boot_SparKLIE1,
   boot_KLIEP,
   boot_spKLIEP, boot_spKLIEPfull,
   boot_oracleKLIEP,
