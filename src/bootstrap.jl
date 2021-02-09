@@ -303,7 +303,7 @@ function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
         suppk = sort(union(supp, k))
 
         θk = copy(θ)
-        θk[suppk] = KLIEP!(θk[suppk], Ψx[suppk, :], Ψy[suppk, :])
+        θk[suppk] = KLIEP(Ψx[suppk, :], Ψy[suppk, :], CD_KLIEP())
 
         θ1[k] = KLIEP_debias1(Ψx, Ψy, θk, Hinv[k], k)
 
@@ -315,7 +315,7 @@ function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
             _fill_boot_Psi!(bΨy, Ψy, view(y_ind, :, b))
 
             θk = copy(θ)
-            θk[suppk] = KLIEP!(θk[suppk], bΨx[suppk, :], bΨy[suppk, :])
+            θk[suppk] = KLIEP(bΨx[suppk, :], bΨy[suppk, :], CD_KLIEP())
 
             bθ1[k, b] = KLIEP_debias1(bΨx, bΨy, θk, Hinv[k], k)
         end
