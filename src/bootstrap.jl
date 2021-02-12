@@ -284,7 +284,7 @@ function _fill_boot_Psi!(bΨ, Ψ, b_ind)
 end
 
 function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300, ind=1:length(θ))
-    nx = size(Ψx)
+    nx = size(Ψx, 2)
     ny = size(Ψy, 2)
     supp = findall(!iszero, θ)
     s = length(Hinv)
