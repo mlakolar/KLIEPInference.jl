@@ -283,13 +283,14 @@ function _fill_boot_Psi!(bΨ, Ψ, b_ind)
   end
 end
 
-function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
-    p, nx = size(Ψx)
+function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300, ind=1:length(θ))
+    nx = size(Ψx)
     ny = size(Ψy, 2)
     supp = findall(!iszero, θ)
+    s = length(Hinv)
 
-    θ1 = Vector{Float64}(undef, p)
-    bθ1 = Matrix{Float64}(undef, p, bootSamples)
+    θ1 = Vector{Float64}(undef, s)
+    bθ1 = Matrix{Float64}(undef, s, bootSamples)
 
     x_ind = Matrix{Int16}(undef, nx, bootSamples)
     y_ind = Matrix{Int16}(undef, ny, bootSamples)
@@ -299,13 +300,13 @@ function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
         sample!(1:ny, view(y_ind, :, b))
     end
 
-    for k = 1:p
-        suppk = sort(union(supp, k))
+    for i = 1:s
+        suppk = sort(union(supp, ind[i]))
 
         θk = copy(θ)
         θk[suppk] = KLIEP(Ψx[suppk, :], Ψy[suppk, :], CD_KLIEP())
 
-        θ1[k] = KLIEP_debias1(Ψx, Ψy, θk, Hinv[k], k)
+        θ1[i] = KLIEP_debias1(Ψx, Ψy, θk, Hinv[i], ind[i])
 
         bΨx = similar(Ψx)
         bΨy = similar(Ψy)
@@ -317,7 +318,7 @@ function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
             θk = copy(θ)
             θk[suppk] = KLIEP(bΨx[suppk, :], bΨy[suppk, :], CD_KLIEP())
 
-            bθ1[k, b] = KLIEP_debias1(bΨx, bΨy, θk, Hinv[k], k)
+            bθ1[i, b] = KLIEP_debias1(bΨx, bΨy, θk, Hinv[i], ind[i])
         end
     end
 
