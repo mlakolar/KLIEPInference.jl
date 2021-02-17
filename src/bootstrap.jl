@@ -4,12 +4,14 @@ struct BootstrapEstimates
 end
 
 function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
-    p = size(Ψx, 1) === size(Ψy, 1) === length(θ) || throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
-    if length(Hinv) !== p
-        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal number of parameters, $(p)"))
+    if !(size(Ψx, 1) === size(Ψy, 1) === length(θ))
+        throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
+    end
+    if length(Hinv) !== size(Ψx, 1)
+        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal number of parameters, $(size(Ψx, 1))"))
     end
 
-    nx = size(Ψx, 2)
+    p, nx = size(Ψx)
     ny = size(Ψy, 2)
     x_ind = Matrix{Int16}(undef, nx, bootSamples)
     y_ind = Matrix{Int16}(undef, ny, bootSamples)
