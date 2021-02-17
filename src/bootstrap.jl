@@ -96,7 +96,7 @@ function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}
     end
 end
 
-boot_SparKLIE(Ψx, Ψy, θ, Hinv, ::Nothing; bootSamples::Int=300, debias::Int=0) =
+boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples::Int=300, debias::Int=0) =
     _boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
 boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int=300, debias::Int=0) =
     _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
