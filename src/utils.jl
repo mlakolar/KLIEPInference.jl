@@ -21,8 +21,7 @@ function rhat(θ, Ψy)
     r ./ mean(r)
 end
 
-function KLIEP_Hessian(θ, Ψy)
-    StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected=false) ./ size(Ψy, 2)
+KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected=false) ./ size(Ψy, 2)
 
 function _maxabs(a, b)
     maximum(x -> abs(x[1]-x[2]), zip(a, b))
