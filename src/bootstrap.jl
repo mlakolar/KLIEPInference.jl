@@ -64,7 +64,7 @@ function _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
     θb
 end
 
-function boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int64=300, debias::Int64=nothing)
+function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples, debias)
     if !(size(Ψx, 1) === size(Ψy, 1) === length(θ))
         throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
     end
@@ -96,7 +96,10 @@ function boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange};
     end
 end
 
-boot_SparKLIE(Ψx, Ψy, θ, Hinv, ::Nothing; bootSamples::Int64=300, debias::Int64=nothing) = boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
+boot_SparKLIE(Ψx, Ψy, θ, Hinv, ::Nothing; bootSamples::Int=300, debias::Int=0) =
+    _boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
+boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int=300, debias::Int=0) =
+    _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
 
 function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
     m, bootSamples = size(straps.θb)
