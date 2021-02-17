@@ -4,94 +4,101 @@ struct BootstrapEstimates
 end
 
 function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
-    p, nx = size(Ψx)
+    p = size(Ψx, 1) === size(Ψy, 1) === length(θ) || throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
+    if length(Hinv) !== p
+        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal number of parameters, $(p)"))
+    end
+
+    nx = size(Ψx, 2)
     ny = size(Ψy, 2)
-    supp = findall(!iszero, θ)
-
-    θ1 = Vector{Float64}(undef, p)
-
-    bθ1 = Matrix{Float64}(undef, p, bootSamples)
-
     x_ind = Matrix{Int16}(undef, nx, bootSamples)
     y_ind = Matrix{Int16}(undef, ny, bootSamples)
-
     for b = 1:bootSamples
         sample!(1:nx, view(x_ind, :, b))
         sample!(1:ny, view(y_ind, :, b))
     end
 
+    supp = findall(!iszero, θ)
+    θ1 = Vector{Float64}(undef, p)
+    bθ1 = Matrix{Float64}(undef, p, bootSamples)
     for k = 1:p
         suppk = sort(union(supp, k))
-
         θk = copy(θ)
         θk[suppk] = KLIEP(Ψx[suppk, :], Ψy[suppk, :], CD_KLIEP())
-
-        θ1[k] = KLIEP_debias1(Ψx, Ψy, θk, Hinv[k], k)
+        r = rhat(θk, Ψy)
+        μx = vec(mean(Ψx, dims=2))
+        θ1[k] = θk[k]
+        for l in findall(!iszero, Hinv[k])
+            θ1[k] += Hinv[k][l] * ( μx[l] - mean( r .* Ψy[l, :] ) )
+        end
 
         bΨx = similar(Ψx)
         bΨy = similar(Ψy)
-
         for b = 1:bootSamples
             _fill_boot_Psi!(bΨx, Ψx, view(x_ind, :, b))
             _fill_boot_Psi!(bΨy, Ψy, view(y_ind, :, b))
-
             θk = copy(θ)
             θk[suppk] = KLIEP(bΨx[suppk, :], bΨy[suppk, :], CD_KLIEP())
-
-            bθ1[k, b] = KLIEP_debias1(bΨx, bΨy, θk, Hinv[k], k)
+            r = rhat(θk, bΨy)
+            μx = vec(mean(bΨx, dims=2))
+            bθ1[k, b] = θk[k]
+            for l in findall(!iszero, Hinv[k])
+                bθ1[k, b] += Hinv[k][l] * ( μx[l] - mean( r .* bΨy[l, :] ) )
+            end
         end
     end
-
     BootstrapEstimates(θ1, bθ1)
 end
 
-function boot_SparKLIE1(Ψx, Ψy, θ, Hinv, idx; bootSamples::Int64=300)
-    if length(Hinv) != length(idx)
-        throw(DimensionMismatch("length of Hinv not equal to length of idx"))
+function boot_SparKLIE1(Ψx, Ψy, θ, Hinv, idx::Union{Vector{Int64},UnitRange{Int64}}; bootSamples::Int64=300)
+    if !(size(Ψx, 1) === size(Ψy, 1) === length(θ))
+        throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
+    end
+    if length(Hinv) !== length(idx)
+        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal length of idx, $(length(idx))"))
+    end
+
+    nx = size(Ψx, 2)
+    ny = size(Ψy, 2)
+    x_ind = Matrix{Int16}(undef, nx, bootSamples)
+    y_ind = Matrix{Int16}(undef, ny, bootSamples)
+    for b = 1:bootSamples
+        sample!(1:nx, view(x_ind, :, b))
+        sample!(1:ny, view(y_ind, :, b))
     end
 
     nk = length(idx)
-    nx = size(Ψx, 2)
-    ny = size(Ψy, 2)
     supp = findall(!iszero, θ)
-
     θ1 = Vector{Float64}(undef, nk)
-
     bθ1 = Matrix{Float64}(undef, nk, bootSamples)
-
-    x_ind = Matrix{Int16}(undef, nx, bootSamples)
-    y_ind = Matrix{Int16}(undef, ny, bootSamples)
-
-    for b = 1:bootSamples
-        sample!(1:nx, view(x_ind, :, b))
-        sample!(1:ny, view(y_ind, :, b))
-    end
-
     for k = 1:nk
         suppk = sort(union(supp, idx[k]))
-
         θk = copy(θ)
         θk[suppk] = KLIEP(Ψx[suppk, :], Ψy[suppk, :], CD_KLIEP())
-
-        θ1[k] = KLIEP_debias1(Ψx, Ψy, θk, Hinv[k], idx[k])
+        r = rhat(θk, Ψy)
+        μx = vec(mean(Ψx, dims=2))
+        θ1[k] = θk[idx[k]]
+        for l in findall(!iszero, Hinv[k])
+            θ1[k] += Hinv[k][l] * ( μx[l] - mean( r .* Ψy[l, :] ) )
+        end
 
         bΨx = similar(Ψx)
         bΨy = similar(Ψy)
-
         for b = 1:bootSamples
             _fill_boot_Psi!(bΨx, Ψx, view(x_ind, :, b))
             _fill_boot_Psi!(bΨy, Ψy, view(y_ind, :, b))
-
             θk = copy(θ)
             θk[suppk] = KLIEP(bΨx[suppk, :], bΨy[suppk, :], CD_KLIEP())
-
-            bθ1[k, b] = KLIEP_debias1(bΨx, bΨy, θk, Hinv[k], idx[k])
+            r = rhat(θk, bΨy)
+            μx = vec(mean(bΨx, dims=2))
+            bθ1[k, b] = θk[idx[k]]
+            for l in findall(!iszero, Hinv[k])
+                bθ1[k, b] += Hinv[k][l] * ( μx[l] - mean( r .* bΨy[l, :] ) )
+            end
         end
     end
-
     BootstrapEstimates(θ1, bθ1)
 end
-
 
 function boot_KLIEP(Ψx, Ψy; bootSamples::Int64=300)
 

@@ -1,16 +1,10 @@
 function KLIEP_debias1(Ψx, Ψy, θ, ω, idx::Int64)
     μx = vec(mean(Ψx, dims=2))
-
-    r = zeros(size(Ψy, 2))
-    mul!(r, transpose(Ψy), θ)
-    r .= exp.(r)
-    r ./= mean(r)
-
+    r = rhat(θ, Ψy)
     θ1 = θ[idx]
     for k in findall(!iszero, ω)
         θ1 += ω[k] * ( μx[k] - mean( r .* Ψy[k, :] ) )
     end
-
     θ1
 end
 

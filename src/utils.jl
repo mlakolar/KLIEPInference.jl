@@ -1,14 +1,12 @@
 
 function Ψising(X)
     p, n = size(X)
-
     m = div(p * (p - 1), 2)
     out = zeros(Float64, m, n)
-
-    for i=1:n
+    for i = 1:n
         ind = 0
-        for row=2:p
-            for col=1:row-1
+        for row = 2:p
+            for col = 1:row-1
                 ind += 1
                 out[ind, i] = xor(X[col, i], X[row, i]) ? -1. : 1.
             end
@@ -17,15 +15,13 @@ function Ψising(X)
     out
 end
 
-function KLIEP_Hessian(θ, Ψy)
-  m, n = size(Ψy)
-
-  w = transpose(Ψy) * θ
-  w .= exp.(w)
-  w ./= mean(w)
-
-  StatsBase.cov(Ψy, weights(w), 2; corrected=false)
+function rhat(θ, Ψy)
+    r = transpose(Ψy) * θk
+    r .= exp.(r)
+    r ./ mean(r)
 end
+
+KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), dims=2; corrected=false) ./ size(Ψy, 2)
 
 function _maxabs(a, b)
     maximum(x -> abs(x[1]-x[2]), zip(a, b))
