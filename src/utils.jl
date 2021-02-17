@@ -16,7 +16,7 @@ function Ψising(X)
 end
 
 function rhat(θ, Ψy)
-    r = transpose(Ψy) * θk
+    r = transpose(Ψy) * θ
     r .= exp.(r)
     r ./ mean(r)
 end
