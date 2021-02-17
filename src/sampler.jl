@@ -6,6 +6,35 @@ struct IsingSampler <: Sampleable{Multivariate,Discrete}
     thin::Int64
 end
 
+function IsingSampler(θ::Vector{Float64}; burn::Int64=3000, thin::Int64=1000)
+    m = length(θ)
+    p = convert(Int, ceil((1. + sqrt(1. + 8. * m)) / 2.))
+
+    # Find neighbors
+    nbs = Vector{Vector{Int64}}(undef, p)
+    for node=1:p
+        nbs[node] = Vector{Int64}(undef, 0)
+    end
+    for node=1:p
+        for nb=1:p
+            if node==nb
+                continue
+            end
+            if !iszero(θ[trimap(node, nb)])
+                push!(nbs[node], nb)
+            end
+        end
+    end
+
+    # initial state
+    state = rand(Bernoulli(), p) .== 1.
+    spl = IsingSampler(p, θ, nbs, state, thin)
+    for j=1:burn
+        _sample_one!(spl)
+    end
+    spl
+end
+
 Base.length(s::IsingSampler) = s.p
 Base.eltype(s::IsingSampler) = Bool
 
