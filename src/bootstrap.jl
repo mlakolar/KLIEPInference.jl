@@ -83,10 +83,8 @@ function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}
     end
 end
 
-boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples::Int=300, debias::Int=0) =
-_boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
-boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int=300, debias::Int=0) =
-_boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
+boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples::Int=300, debias::Int=0) = _boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
+boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int=300, debias::Int=0) = _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
 
 function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
     p, bootSamples = size(straps.θb)

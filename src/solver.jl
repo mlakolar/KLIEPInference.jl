@@ -43,8 +43,7 @@ function spKLIEP_scaled!(x::SparseIterate, Ψx, Ψy, λ)
     coordinateDescent!(x, f, g, CDOptions(; warmStart=true))
 end
 
-spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP) = spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
-spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP, loadings=true) = spKLIEP_scaled!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
+spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP; loadings=true) = (loadings ? spKLIEP_scaled!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ) : spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ))
 
 function Hinv_row(H, row, λ0)
     p = size(H, 1)
