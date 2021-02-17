@@ -23,14 +23,11 @@ spKLIEP!(x::SparseIterate, f::CDKLIEPLoss, g::ProxL1) = coordinateDescent!(x, f,
 function _compute_loadings(x, Ψx, Ψy)
     p, nx = size(Ψx)
     ny = size(Ψy, 2)
-
-    Ψyrt = rhat(x, Ψy) .* transpose(Ψy)
-
+    Ψyr = transpose( rhat(x, Ψy) .* transpose(Ψy) )
     s = zeros(p)
     for k = 1:p
-        s[k] = sqrt((var(Ψx[k, :]) / nx) + (var(Ψyrt[:, k]) / ny))
+        s[k] = sqrt( (var(Ψx[k, :]) / nx) + (var(Ψyr[k, :]) / ny) )
     end
-
     s
 end
 
@@ -46,20 +43,15 @@ function spKLIEP_scaled!(x::SparseIterate, Ψx, Ψy, λ)
     coordinateDescent!(x, f, g, CDOptions(; warmStart=true))
 end
 
-function spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP; loadings=true)
-    if loadings
-        spKLIEP_scaled!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
-    else
-        spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
-    end
-end
+spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP) = spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
+spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP, loadings=true) = spKLIEP_scaled!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
 
 function Hinv_row(H, row, λ0)
-    m = size(H, 1)
-    e = zeros(m)
+    p = size(H, 1)
+    e = zeros(p)
     e[row] = -1.
 
-    x = SparseIterate(m)
+    x = SparseIterate(p)
     x[row] = 1.
     f = CDQuadraticLoss(H, e)
 
@@ -70,7 +62,6 @@ function Hinv_row(H, row, λ0)
     for iter=1:10
         coordinateDescent!(x, f, ProxL1(λ0 * σ, λ))
         σnew = sqrt( dot(x, H * x) )
-
         if abs(σnew - σ) / σ < 1e-3
             break
         end

@@ -1,11 +1,19 @@
 
+function rhat(θ, Ψy)
+    r = transpose(Ψy) * θ
+    r .= exp.(r)
+    r ./ mean(r)
+end
+
+KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected=false)
+
 function Ψising(X)
-    p, n = size(X)
-    m = div(p * (p - 1), 2)
-    out = zeros(Float64, m, n)
+    m, n = size(X)
+    p = div(m * (m - 1), 2)
+    out = zeros(Float64, p, n)
     for i = 1:n
         ind = 0
-        for row = 2:p
+        for row = 2:m
             for col = 1:row-1
                 ind += 1
                 out[ind, i] = xor(X[col, i], X[row, i]) ? -1. : 1.
@@ -15,13 +23,18 @@ function Ψising(X)
     out
 end
 
-function rhat(θ, Ψy)
-    r = transpose(Ψy) * θ
-    r .= exp.(r)
-    r ./ mean(r)
+function _find_supp3(θ, ω, k)
+    supp1 = findall(!iszero, θ)
+    supp2 = findall(!iszero, ω)
+    supp3 = union(supp1, supp2)
+    pos_k = findfirst(isequal(k), supp3)
+    if pos_k == nothing
+        push!(supp3, k)
+    else
+        supp3[pos_k], supp3[end] = supp3[end], supp3[pos_k]
+    end
+    supp3
 end
-
-KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected=false)
 
 function _maxabs(a, b)
     maximum(x -> abs(x[1]-x[2]), zip(a, b))
@@ -34,7 +47,7 @@ function trimap(i::Integer, j::Integer)
     if i < j
         trimap(j, i)
     else
-        div((i-2)*(i-1), 2) + j
+        j + div((i - 1) * (i - 2), 2)
     end
 end
 
@@ -61,13 +74,14 @@ function pack(Θ)
     m = size(Θ, 1)
     p = div(m * (m - 1), 2)
     out = zeros(Float64, p)
-    for j=1:(m-1)
-        for i=(j+1):m
+    for j = 1:(m-1)
+        for i = (j+1):m
             out[trimap(i,j)] = Θ[i,j]
         end
     end
     out
 end
+
 
 ####################################
 #
@@ -75,60 +89,60 @@ end
 #
 ####################################
 struct CDKLIEPLoss <: CoordinateDifferentiableFunction
-  μx::Vector{Float64}   # mean(Ψx, dims = 2)
-  Ψy::Matrix{Float64}
-  r::Vector{Float64}    # ny dim vector --- stores θ'Ψy(i)
-  p::Int64
+    μx::Vector{Float64}   # mean(Ψx, dims = 2)
+    Ψy::Matrix{Float64}
+    r::Vector{Float64}    # ny dim vector --- stores θ'Ψy(i)
+    p::Int64
 end
 
 function CDKLIEPLoss(Ψx::Matrix{Float64}, Ψy::Matrix{Float64})
-  (p = size(Ψx, 1)) == size(Ψy, 1) || throw(DimensionMismatch())
+    (p = size(Ψx, 1)) == size(Ψy, 1) || throw(DimensionMismatch())
 
-  CDKLIEPLoss(vec(mean(Ψx, dims=2)), Ψy, zeros(size(Ψy, 2)), p)
+    CDKLIEPLoss(vec(mean(Ψx, dims=2)), Ψy, zeros(size(Ψy, 2)), p)
 end
 
 CoordinateDescent.numCoordinates(f::CDKLIEPLoss) = f.p
 
 function CoordinateDescent.initialize!(f::CDKLIEPLoss, x::SparseIterate)
 
-  mul!(f.r, transpose(f.Ψy), x)
+    mul!(f.r, transpose(f.Ψy), x)
 
-  nothing
+    nothing
 end
 
 function CoordinateDescent.gradient(
-  f::CDKLIEPLoss,
-  x::SparseIterate,
-  j::Int64)
+    f::CDKLIEPLoss,
+    x::SparseIterate,
+    j::Int64)
 
-  μx, Ψy, r = f.μx, f.Ψy, f.r
+    μx, Ψy, r = f.μx, f.Ψy, f.r
 
-  -μx[j] + mean( exp.(r) .* Ψy[j, :] ) / mean(exp, r)
+    -μx[j] + mean( exp.(r) .* Ψy[j, :] ) / mean(exp, r)
 end
 
 function CoordinateDescent.descendCoordinate!(
-  f::CDKLIEPLoss,
-  g::Union{ProxL1, ProxZero},
-  x::SparseIterate,
-  j::Int64)
+    f::CDKLIEPLoss,
+    g::Union{ProxL1, ProxZero},
+    x::SparseIterate,
+    j::Int64)
 
-  μx, Ψy, r = f.μx, f.Ψy, f.r
+    μx, Ψy, r = f.μx, f.Ψy, f.r
 
-  mean_exp_r = mean(exp, r)
-  mean_exp_r_Ψy = mean( exp.(r) .* Ψy[j, :] )
-  mean_exp_r_Ψy2 = mean( exp.(r) .* Ψy[j, :].^2. )
+    mean_exp_r = mean(exp, r)
+    mean_exp_r_Ψy = mean( exp.(r) .* Ψy[j, :] )
+    mean_exp_r_Ψy2 = mean( exp.(r) .* Ψy[j, :].^2. )
 
-  @inbounds grad = -μx[j] + mean_exp_r_Ψy / mean_exp_r
-  H = mean_exp_r_Ψy2 / mean_exp_r - mean_exp_r_Ψy^2 / mean_exp_r^2.
+    @inbounds grad = -μx[j] + mean_exp_r_Ψy / mean_exp_r
+    H = mean_exp_r_Ψy2 / mean_exp_r - mean_exp_r_Ψy^2 / mean_exp_r^2.
 
-  @inbounds oldVal = x[j]
-  @inbounds x[j] -= grad / H
-  newVal = cdprox!(g, x, j, 1. / H)
-  h = newVal - oldVal
+    @inbounds oldVal = x[j]
+    @inbounds x[j] -= grad / H
+    newVal = cdprox!(g, x, j, 1. / H)
+    h = newVal - oldVal
 
-  # update internals
-  for i=1:length(r)
-      @inbounds r[i] += h*Ψy[j, i]
-  end
-  h
+    # update internals
+    for i=1:length(r)
+        @inbounds r[i] += h*Ψy[j, i]
+    end
+    h
 end

@@ -12,19 +12,6 @@ function _fill_bΨ!(bΨ, Ψ, b_ind)
     end
 end
 
-function _find_supp3(θ, ω, k)
-    supp1 = findall(!iszero, θ)
-    supp2 = findall(!iszero, ω)
-    supp3 = union(supp1, supp2)
-    pos_k = findfirst(isequal(k), supp3)
-    if pos_k == nothing
-        push!(supp3, k)
-    else
-        supp3[pos_k], supp3[end] = supp3[end], supp3[pos_k]
-    end
-    supp3
-end
-
 function _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
     bΨx = similar(Ψx)
     bΨy = similar(Ψy)
@@ -97,20 +84,20 @@ function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}
 end
 
 boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples::Int=300, debias::Int=0) =
-    _boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
+_boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
 boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int=300, debias::Int=0) =
-    _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
+_boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
 
 function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
-    m, bootSamples = size(straps.θb)
+    p, bootSamples = size(straps.θb)
 
     infNormDist = Vector{Float64}(undef, bootSamples)
-    CI = Matrix{Float64}(undef, m, 2)
-
-    for b=1:bootSamples
+    for b = 1:bootSamples
         infNormDist[b] = norm_diff(straps.θhat, view(straps.θb, :, b), Inf)
     end
     x = quantile!(infNormDist, 1 - α)
+
+    CI = Matrix{Float64}(undef, p, 2)
     CI[:, 1] .= straps.θhat .- x
     CI[:, 2] .= straps.θhat .+ x
 
@@ -118,19 +105,18 @@ function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
 end
 
 function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
-    m, bootSamples = size(straps.θb)
+    p, bootSamples = size(straps.θb)
 
-    infNormDist = Vector{Float64}(undef, bootSamples)
     w = reshape(std(straps.θb; dims = 2, corrected = false), :)
-
-    CI = Matrix{Float64}(undef, m, 2)
-    tmp = Vector{Float64}(undef, m)
-
+    tmp = Vector{Float64}(undef, p)
+    infNormDist = Vector{Float64}(undef, bootSamples)
     for b=1:bootSamples
         tmp .= (straps.θhat .- straps.θb[:, b]) ./ w
         infNormDist[b] = norm(tmp, Inf)
     end
     x = quantile!(infNormDist, 1 - α)
+
+    CI = Matrix{Float64}(undef, p, 2)
     @. CI[:, 1] = straps.θhat - x * w
     @. CI[:, 2] = straps.θhat + x * w
 

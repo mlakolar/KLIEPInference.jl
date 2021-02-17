@@ -5,27 +5,30 @@ using StatsBase
 using ProximalBase, CoordinateDescent
 
 export
-  IsingSampler,
-  chain,
-  removeEdges!,
-  addEdges!,
+    IsingSampler,
+    chain,
+    removeEdges!,
+    addEdges!,
 
-  # KLIEP solvers
-  KLIEPSolver,
-  CD_KLIEP,
-  KLIEP, KLIEP!,
-  spKLIEP, spKLIEP!,
-  Hinv_row,
+    # KLIEP solvers
+    KLIEPSolver,
+    CD_KLIEP,
+    KLIEP, KLIEP!,
+    spKLIEP, spKLIEP!,
+    Hinv_row,
 
-  # inference
-  BootstrapEstimates,
-  boot_SparKLIE,
-  simulCI, simulCIstudentized,
+    # inference
+    BootstrapEstimates,
+    boot_SparKLIE,
+    simulCI,
+    simulCIstudentized,
 
-  # other
-  Ψising, unpack, pack,
-  KLIEP_Hessian,
-  SparKLIE_stderr
+    # other
+    Ψising,
+    unpack,
+    pack,
+    KLIEP_Hessian,
+    SparKLIE_stderr
 
 include("utils.jl")
 include("bootstrap.jl")

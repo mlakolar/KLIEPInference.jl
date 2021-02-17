@@ -44,11 +44,11 @@ Distributions.rand(s::IsingSampler, n::Int) = Distributions._rand!(s, BitMatrix(
 function Distributions._rand!(s::IsingSampler, x::BitMatrix)
     n = size(x, 2)
     for i=1:n
-      for j=1:s.thin
+        for j=1:s.thin
+            _sample_one!(s)
+        end
         _sample_one!(s)
-      end
-      _sample_one!(s)
-      x[:, i] .= s.state
+        x[:, i] .= s.state
     end
     x
 end
