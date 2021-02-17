@@ -14,24 +14,18 @@ export
   KLIEPSolver,
   CD_KLIEP,
   KLIEP, KLIEP!,
-  spKLIEP, spKLIEP!, spKLIEP_refit!,
+  spKLIEP, spKLIEP!,
   Hinv_row,
 
   # inference
   BootstrapEstimates,
-  boot_SparKLIE1,
-  boot_KLIEP,
-  boot_spKLIEP, boot_spKLIEPfull,
-  boot_oracleKLIEP,
-  boot_gaussKLIEP,
-  simulCI,
-  simulCIstudentized,
+  boot_SparKLIE,
+  simulCI, simulCIstudentized,
 
   # other
   Ψising, unpack, pack,
   KLIEP_Hessian,
-  KLIEP_debias1, KLIEP_debias2,
-  KLIEP_stderr
+  SparKLIE_stderr
 
 include("utils.jl")
 include("bootstrap.jl")

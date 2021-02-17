@@ -3,63 +3,74 @@ struct BootstrapEstimates
     θb::Matrix{Float64}     # each column represents a bootstrap estimate
 end
 
-function boot_SparKLIE1(Ψx, Ψy, θ, Hinv; bootSamples::Int64=300)
-    if !(size(Ψx, 1) === size(Ψy, 1) === length(θ))
-        throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
-    end
-    if length(Hinv) !== size(Ψx, 1)
-        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal number of parameters, $(size(Ψx, 1))"))
-    end
-
-    p, nx = size(Ψx)
-    ny = size(Ψy, 2)
-    x_ind = Matrix{Int16}(undef, nx, bootSamples)
-    y_ind = Matrix{Int16}(undef, ny, bootSamples)
-    for b = 1:bootSamples
-        sample!(1:nx, view(x_ind, :, b))
-        sample!(1:ny, view(y_ind, :, b))
-    end
-
-    supp = findall(!iszero, θ)
-    θ1 = Vector{Float64}(undef, p)
-    bθ1 = Matrix{Float64}(undef, p, bootSamples)
-    for k = 1:p
-        suppk = sort(union(supp, k))
-        θk = copy(θ)
-        θk[suppk] = KLIEP(Ψx[suppk, :], Ψy[suppk, :], CD_KLIEP())
-        r = rhat(θk, Ψy)
-        μx = vec(mean(Ψx, dims=2))
-        θ1[k] = θk[k]
-        for l in findall(!iszero, Hinv[k])
-            θ1[k] += Hinv[k][l] * ( μx[l] - mean( r .* Ψy[l, :] ) )
+function _fill_bΨ!(bΨ, Ψ, b_ind)
+    p, n = size(Ψ)
+    for col = 1:n
+        for row = 1:p
+            bΨ[row, col] = Ψ[row, b_ind[col]]
         end
+    end
+end
 
-        bΨx = similar(Ψx)
-        bΨy = similar(Ψy)
-        for b = 1:bootSamples
-            _fill_boot_Psi!(bΨx, Ψx, view(x_ind, :, b))
-            _fill_boot_Psi!(bΨy, Ψy, view(y_ind, :, b))
-            θk = copy(θ)
-            θk[suppk] = KLIEP(bΨx[suppk, :], bΨy[suppk, :], CD_KLIEP())
-            r = rhat(θk, bΨy)
-            μx = vec(mean(bΨx, dims=2))
-            bθ1[k, b] = θk[k]
+function _find_supp3(θ, ω, k)
+    supp1 = findall(!iszero, θ)
+    supp2 = findall(!iszero, ω)
+    supp3 = union(supp1, supp2)
+    pos_k = findfirst(isequal(k), supp3)
+    if pos_k == nothing
+        push!(supp3, k)
+    else
+        supp3[pos_k], supp3[end] = supp3[end], supp3[pos_k]
+    end
+    supp3
+end
+
+function _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+    bΨx = similar(Ψx)
+    bΨy = similar(Ψy)
+    θb = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
+    for b = 1:size(x_ind, 2)
+        _fill_bΨ!(bΨx, Ψx, view(x_ind, :, b))
+        _fill_bΨ!(bΨy, Ψy, view(y_ind, :, b))
+        bμx = vec(mean(bΨx, dims=2))
+        for k = 1:length(θ_ind)
+            supp3 = _find_supp3(θ, [], θ_ind[k])
+            bθk = KLIEP(bΨx[supp3, :], bΨy[supp3, :], CD_KLIEP())
+            br = rhat(bθk, bΨy[supp3, :])
+            θb[k, b] = bθk[end]
             for l in findall(!iszero, Hinv[k])
-                bθ1[k, b] += Hinv[k][l] * ( μx[l] - mean( r .* bΨy[l, :] ) )
+                θb[k, b] += Hinv[k][l] * ( bμx[l] - mean( br .* bΨy[l, :] ) )
             end
         end
     end
-    BootstrapEstimates(θ1, bθ1)
+    θb
 end
 
-function boot_SparKLIE1(Ψx, Ψy, θ, Hinv, idx::Union{Vector{Int64},UnitRange{Int64}}; bootSamples::Int64=300)
+function _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+    θb = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
+    for k = 1:length(θ_ind)
+        supp3 = _find_supp3(θ, Hinv[k], θ_ind[k])
+        Ψxk = Ψx[supp3, :]
+        Ψyk = Ψy[supp3, :]
+        bΨxk = similar(Ψxk)
+        bΨyk = similar(Ψyk)
+        for b = 1:size(x_ind, 2)
+            _fill_bΨ!(bΨxk, Ψxk, view(x_ind, :, b))
+            _fill_bΨ!(bΨyk, Ψyk, view(y_ind, :, b))
+            θk = KLIEP(bΨxk, bΨyk, CD_KLIEP())
+            θb[k, b] = θk[end]
+        end
+    end
+    θb
+end
+
+function boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int64=300, debias::Int64=nothing)
     if !(size(Ψx, 1) === size(Ψy, 1) === length(θ))
         throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
     end
-    if length(Hinv) !== length(idx)
-        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal length of idx, $(length(idx))"))
+    if length(Hinv) !== length(θ_ind)
+        throw(DimensionMismatch("length of Hinv, $(length(Hinv)), does not equal number of parameters, $(length(θ_ind))"))
     end
-
     nx = size(Ψx, 2)
     ny = size(Ψy, 2)
     x_ind = Matrix{Int16}(undef, nx, bootSamples)
@@ -68,272 +79,24 @@ function boot_SparKLIE1(Ψx, Ψy, θ, Hinv, idx::Union{Vector{Int64},UnitRange{I
         sample!(1:nx, view(x_ind, :, b))
         sample!(1:ny, view(y_ind, :, b))
     end
-
-    nk = length(idx)
-    supp = findall(!iszero, θ)
-    θ1 = Vector{Float64}(undef, nk)
-    bθ1 = Matrix{Float64}(undef, nk, bootSamples)
-    for k = 1:nk
-        suppk = sort(union(supp, idx[k]))
-        θk = copy(θ)
-        θk[suppk] = KLIEP(Ψx[suppk, :], Ψy[suppk, :], CD_KLIEP())
-        r = rhat(θk, Ψy)
-        μx = vec(mean(Ψx, dims=2))
-        θ1[k] = θk[idx[k]]
-        for l in findall(!iszero, Hinv[k])
-            θ1[k] += Hinv[k][l] * ( μx[l] - mean( r .* Ψy[l, :] ) )
-        end
-
-        bΨx = similar(Ψx)
-        bΨy = similar(Ψy)
-        for b = 1:bootSamples
-            _fill_boot_Psi!(bΨx, Ψx, view(x_ind, :, b))
-            _fill_boot_Psi!(bΨy, Ψy, view(y_ind, :, b))
-            θk = copy(θ)
-            θk[suppk] = KLIEP(bΨx[suppk, :], bΨy[suppk, :], CD_KLIEP())
-            r = rhat(θk, bΨy)
-            μx = vec(mean(bΨx, dims=2))
-            bθ1[k, b] = θk[idx[k]]
-            for l in findall(!iszero, Hinv[k])
-                bθ1[k, b] += Hinv[k][l] * ( μx[l] - mean( r .* bΨy[l, :] ) )
-            end
-        end
-    end
-    BootstrapEstimates(θ1, bθ1)
-end
-
-function boot_KLIEP(Ψx, Ψy; bootSamples::Int64=300)
-
-    θ = KLIEP(Ψx, Ψy, CD_KLIEP())
-    θhat = convert(Vector, θ)
-    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
-
-    m, nx = size(Ψx)
-    ny = size(Ψy, 2)
-    bΨx = similar(Ψx)
-    bΨy = similar(Ψy)
-    x_ind = Vector{Int64}(undef, nx)
-    y_ind = Vector{Int64}(undef, ny)
-
-    for b=1:bootSamples
-       sample!(1:nx, x_ind)
-       sample!(1:ny, y_ind)
-
-       _fill_boot_Psi!(bΨx, Ψx, x_ind)
-       _fill_boot_Psi!(bΨy, Ψy, y_ind)
-
-       KLIEP!(θ, bΨx, bΨy)
-       θb[:, b] .= θ
-    end
-
-    BootstrapEstimates(θhat, θb)
-end
-
-function findSupp3(θfs, ω, j)
-    supp1 = findall(!iszero, θfs)
-    supp2 = findall(!iszero, ω)
-
-    supp3 = union(supp1, supp2)
-    pos_j = findfirst(isequal(j), supp3)
-    if pos_j == nothing
-        push!(supp3, j)
+    if debias === 1
+        θhat = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
+        θb = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        return BootstrapEstimates(θhat, θb)
+    elseif debias === 2
+        θhat = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
+        θb = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        return BootstrapEstimates(θhat, θb)
     else
-        supp3[pos_j], supp3[end] = supp3[end], supp3[pos_j]
+        θhat1 = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
+        θhat2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
+        θb1 = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        θb2 = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        return BootstrapEstimates(θhat1, θb1), BootstrapEstimates(θhat2, θb2)
     end
-    supp3
 end
 
-# Hinv = Vector{SparseVector{Float64,Int64}}(undef, m)
-function boot_spKLIEP(Ψx, Ψy, θfs, Hinv; bootSamples::Int64=300)
-
-    # generate bootstrap samples first since we want to use the same
-    # samples for each coordinate j=1...m
-    m, nx = size(Ψx)
-    ny = size(Ψy, 2)
-
-    x_ind = Matrix{Int16}(undef, nx, bootSamples)
-    y_ind = Matrix{Int16}(undef, ny, bootSamples)
-
-    for b=1:bootSamples
-       sample!(1:nx, view(x_ind, :, b))
-       sample!(1:ny, view(y_ind, :, b))
-    end
-    θhat = Vector{Float64}(undef, m)
-    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
-
-    for j=1:m
-        supp3 = findSupp3(θfs, Hinv[j], j)
-
-        # obtain θhat_j
-        bΨx = Ψx[supp3, :]
-        bΨy = Ψy[supp3, :]
-        bbΨx = similar(bΨx)
-        bbΨy = similar(bΨy)
-        θ = KLIEP(bΨx, bΨy, CD_KLIEP())
-        θhat[j] = θ[end]
-
-        # bootstrap
-        for b=1:bootSamples
-           _fill_boot_Psi!(bbΨx, bΨx, view(x_ind, :, b))
-           _fill_boot_Psi!(bbΨy, bΨy, view(y_ind, :, b))
-
-           KLIEP!(θ, bbΨx, bbΨy)
-           θb[j, b] = θ[end]
-        end
-    end
-
-    BootstrapEstimates(θhat, θb)
-end
-
-function boot_spKLIEPfull(Ψx, Ψy, θfs, Hinv, λ1, λ2; bootSamples::Int64=300)
-
-    m, nx = size(Ψx)
-    ny = size(Ψy, 2)
-
-    θhat = Vector{Float64}(undef, m)
-    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
-
-    # compute third stage estimator first
-    for j=1:m
-        supp3 = findSupp3(θfs, Hinv[j], j)
-
-        # obtain θhat_j
-        bΨx = Ψx[supp3, :]
-        bΨy = Ψy[supp3, :]
-        θ = KLIEP(bΨx, bΨy, CD_KLIEP())
-        θhat[j] = θ[end]
-    end
-
-    x_ind = Vector{Int64}(undef, nx)
-    y_ind = Vector{Int64}(undef, ny)
-    Ψx_boot = similar(Ψx)
-    Ψy_boot = similar(Ψy)
-
-    for b=1:bootSamples
-        sample!(1:nx, x_ind)
-        sample!(1:ny, y_ind)
-
-        _fill_boot_Psi!(Ψx_boot, Ψx, x_ind)
-        _fill_boot_Psi!(Ψy_boot, Ψy, y_ind)
-
-        # first step
-        θfs_boot = deepcopy(θfs)
-        spKLIEP!(θfs_boot, Ψx_boot, Ψy_boot, λ1, CD_KLIEP())
-        spKLIEP_refit!(θfs_boot, Ψx_boot, Ψy_boot)
-
-        # second and third step
-        H_boot = KLIEP_Hessian(θfs_boot, Ψy_boot)
-        for j=1:m
-            ω = Hinv_row(H_boot, j, λ2)
-            supp3_boot = findSupp3(θfs_boot, ω, j)
-
-            bΨx_boot = Ψx_boot[supp3_boot, :]
-            bΨy_boot = Ψy_boot[supp3_boot, :]
-
-            θ = KLIEP(bΨx_boot, bΨy_boot, CD_KLIEP())
-            θb[j, b] = θ[end]
-        end
-    end
-
-    BootstrapEstimates(θhat, θb)
-end
-
-# S_delta --- support of Delta
-function boot_oracleKLIEP(Ψx, Ψy, S_delta; bootSamples::Int64=300)
-
-    # generate bootstrap samples first since we want to use the same
-    # samples for each coordinate j=1...m
-    m, nx = size(Ψx)
-    ny = size(Ψy, 2)
-
-    x_ind = Matrix{Int16}(undef, nx, bootSamples)
-    y_ind = Matrix{Int16}(undef, ny, bootSamples)
-
-    for b=1:bootSamples
-       sample!(1:nx, view(x_ind, :, b))
-       sample!(1:ny, view(y_ind, :, b))
-    end
-    θhat = Vector{Float64}(undef, m)
-    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
-
-    for j=1:m
-        S = copy(S_delta)
-        pos_j = findfirst(isequal(j), S)
-        if pos_j == nothing
-            push!(S, j)
-        else
-            S[pos_j], S[end] = S[end], S[pos_j]
-        end
-
-        # obtain θhat_j
-        bΨx = Ψx[S, :]
-        bΨy = Ψy[S, :]
-        bbΨx = similar(bΨx)
-        bbΨy = similar(bΨy)
-        θ = KLIEP(bΨx, bΨy, CD_KLIEP())
-        θhat[j] = θ[end]
-
-        # bootstrap
-        for b=1:bootSamples
-           _fill_boot_Psi!(bbΨx, bΨx, view(x_ind, :, b))
-           _fill_boot_Psi!(bbΨy, bΨy, view(y_ind, :, b))
-
-           KLIEP!(θ, bbΨx, bbΨy)
-           θb[j, b] = θ[end]
-        end
-    end
-
-    BootstrapEstimates(θhat, θb)
-end
-
-function boot_gaussKLIEP(Ψx, Ψy, θhat, Hinv; bootSamples::Int64=300)
-
-    # generate bootstrap samples first since we want to use the same
-    # samples for each coordinate j=1...m
-    m, nx = size(Ψx)
-    ny = size(Ψy, 2)
-
-    # compute weights corresponding to rhat
-    w = transpose(Ψy) * θhat
-    w .= exp.(w)
-    w ./= mean(w)
-
-    # means
-    mux = vec( mean(Ψx, dims = 2) )
-    muy = vec( mean(Ψy, weights(w), 2) )
-
-    θb = Matrix{Float64}(undef, length(θhat), bootSamples)
-
-    # store Gaussian multipliers
-    gx = Vector{Float64}(undef, nx)
-    gy = Vector{Float64}(undef, ny)
-
-    tmp1 = Vector{Float64}(undef, m)
-    tmp2 = Vector{Float64}(undef, m)
-    # bootstrap
-    for b=1:bootSamples
-        rand!(Normal(), gx)
-        rand!(Normal(), gy)
-
-        fill!(tmp1, 0.)
-        fill!(tmp2, 0.)
-        for i=1:nx
-            @. tmp1 += (Ψx[:, i] - mux) * gx[i]
-        end
-
-        for i=1:ny
-            @. tmp2 += (Ψy[:, i] * w[i] - muy) * gy[i]
-        end
-        @. tmp1 = tmp1 / nx + tmp2 / ny
-
-        for j=1:m
-            θb[j, b] = θhat[j] + dot(Hinv[j], tmp1)
-        end
-    end
-
-    BootstrapEstimates(θhat, θb)
-end
-
+boot_SparKLIE(Ψx, Ψy, θ, Hinv, ::Nothing; bootSamples::Int64=300, debias::Int64=nothing) = boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
 
 function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
     m, bootSamples = size(straps.θb)
@@ -369,13 +132,4 @@ function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
     @. CI[:, 2] = straps.θhat + x * w
 
     CI
-end
-
-function _fill_boot_Psi!(bΨ, Ψ, b_ind)
-  m, n = size(Ψ)
-  for col=1:n
-      for row=1:m
-          bΨ[row, col] = Ψ[row, b_ind[col]]
-      end
-  end
 end
