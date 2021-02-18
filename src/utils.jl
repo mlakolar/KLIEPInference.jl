@@ -23,9 +23,20 @@ function Ψising(X)
     out
 end
 
-function _find_supp3(θ, ω, k)
-    supp1 = findall(!iszero, θ)
-    supp2 = findall(!iszero, ω)
+function _find_supp(k::Int, x::Vector)
+    supp = findall(!iszero, x)
+    pos_k = findfirst(isequal(k), supp)
+    if pos_k == nothing
+        push!(supp, k)
+    else
+        supp[pos_k], supp[end] = supp[end], supp[pos_k]
+    end
+    supp
+end
+
+function _find_supp(k::Int, x::Vector, y::Vector)
+    supp1 = findall(!iszero, x)
+    supp2 = findall(!iszero, y)
     supp3 = union(supp1, supp2)
     pos_k = findfirst(isequal(k), supp3)
     if pos_k == nothing

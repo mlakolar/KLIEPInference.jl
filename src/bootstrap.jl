@@ -21,9 +21,9 @@ function _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
         _fill_bΨ!(bΨy, Ψy, view(y_ind, :, b))
         bμx = vec(mean(bΨx, dims=2))
         for k = 1:length(θ_ind)
-            supp3 = _find_supp3(θ, [], θ_ind[k])
-            bθk = KLIEP(bΨx[supp3, :], bΨy[supp3, :], CD_KLIEP())
-            br = rhat(bθk, bΨy[supp3, :])
+            supp = _find_supp(θ_ind[k], θ)
+            bθk = KLIEP(bΨx[supp, :], bΨy[supp, :], CD_KLIEP())
+            br = rhat(bθk, bΨy[supp, :])
             bθ[k, b] = bθk[end]
             for l in findall(!iszero, Hinv[k])
                 bθ[k, b] += Hinv[k][l] * ( bμx[l] - mean( br .* bΨy[l, :] ) )
@@ -36,9 +36,9 @@ end
 function _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
     bθ = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
     for k = 1:length(θ_ind)
-        supp3 = _find_supp3(θ, Hinv[k], θ_ind[k])
-        Ψxk = Ψx[supp3, :]
-        Ψyk = Ψy[supp3, :]
+        supp = _find_supp(θ_ind[k], θ, Hinv[k])
+        Ψxk = Ψx[supp, :]
+        Ψyk = Ψy[supp, :]
         bΨxk = similar(Ψxk)
         bΨyk = similar(Ψyk)
         for b = 1:size(x_ind, 2)
