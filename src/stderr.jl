@@ -1,4 +1,4 @@
-function SparKLIE_stderr(Ψx, Ψy, θ, ω)
+function stderr_SparKLIE(Ψx, Ψy, θ, ω)
     nx = size(Ψx, 2)
     ny = size(Ψy, 2)
     supp = findall(!iszero, ω)

@@ -58,7 +58,7 @@ function Hinv_row(H, row, λ0)
     σ = sqrt( dot(x, H * x) )
     λ = e .+ 1.
 
-    for iter=1:10
+    for iter = 1:10
         coordinateDescent!(x, f, ProxL1(λ0 * σ, λ))
         σnew = sqrt( dot(x, H * x) )
         if abs(σnew - σ) / σ < 1e-3

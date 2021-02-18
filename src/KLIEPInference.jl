@@ -28,7 +28,7 @@ export
     unpack,
     pack,
     KLIEP_Hessian,
-    SparKLIE_stderr
+    stderr_SparKLIE
 
 include("utils.jl")
 include("bootstrap.jl")

@@ -13,9 +13,9 @@ function _fill_bΨ!(bΨ, Ψ, b_ind)
 end
 
 function _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+    bθ = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
     bΨx = similar(Ψx)
     bΨy = similar(Ψy)
-    θb = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
     for b = 1:size(x_ind, 2)
         _fill_bΨ!(bΨx, Ψx, view(x_ind, :, b))
         _fill_bΨ!(bΨy, Ψy, view(y_ind, :, b))
@@ -24,17 +24,17 @@ function _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
             supp3 = _find_supp3(θ, [], θ_ind[k])
             bθk = KLIEP(bΨx[supp3, :], bΨy[supp3, :], CD_KLIEP())
             br = rhat(bθk, bΨy[supp3, :])
-            θb[k, b] = bθk[end]
+            bθ[k, b] = bθk[end]
             for l in findall(!iszero, Hinv[k])
-                θb[k, b] += Hinv[k][l] * ( bμx[l] - mean( br .* bΨy[l, :] ) )
+                bθ[k, b] += Hinv[k][l] * ( bμx[l] - mean( br .* bΨy[l, :] ) )
             end
         end
     end
-    θb
+    bθ
 end
 
 function _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
-    θb = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
+    bθ = Matrix{Float64}(undef, length(θ_ind), size(x_ind, 2))
     for k = 1:length(θ_ind)
         supp3 = _find_supp3(θ, Hinv[k], θ_ind[k])
         Ψxk = Ψx[supp3, :]
@@ -44,11 +44,11 @@ function _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
         for b = 1:size(x_ind, 2)
             _fill_bΨ!(bΨxk, Ψxk, view(x_ind, :, b))
             _fill_bΨ!(bΨyk, Ψyk, view(y_ind, :, b))
-            θk = KLIEP(bΨxk, bΨyk, CD_KLIEP())
-            θb[k, b] = θk[end]
+            bθk = KLIEP(bΨxk, bΨyk, CD_KLIEP())
+            bθ[k, b] = bθk[end]
         end
     end
-    θb
+    bθ
 end
 
 function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples, debias)
@@ -67,19 +67,19 @@ function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}
         sample!(1:ny, view(y_ind, :, b))
     end
     if debias === 1
-        θhat = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
-        θb = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
-        return BootstrapEstimates(θhat, θb)
+        θ1 = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
+        bθ1 = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        return BootstrapEstimates(θ1, bθ1)
     elseif debias === 2
-        θhat = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
-        θb = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
-        return BootstrapEstimates(θhat, θb)
+        θ2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
+        bθ2 = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        return BootstrapEstimates(θ2, bθ2)
     else
-        θhat1 = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
-        θhat2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
-        θb1 = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
-        θb2 = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
-        return BootstrapEstimates(θhat1, θb1), BootstrapEstimates(θhat2, θb2)
+        θ1 = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
+        θ2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
+        bθ1 = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        bθ2 = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        return BootstrapEstimates(θ1, bθ1), BootstrapEstimates(θ2, bθ2)
     end
 end
 
@@ -105,10 +105,10 @@ end
 function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
     p, bootSamples = size(straps.θb)
 
-    w = reshape(std(straps.θb; dims = 2, corrected = false), :)
-    tmp = Vector{Float64}(undef, p)
     infNormDist = Vector{Float64}(undef, bootSamples)
-    for b=1:bootSamples
+    tmp = Vector{Float64}(undef, p)
+    w = reshape(std(straps.θb; dims = 2, corrected = false), :)
+    for b = 1:bootSamples
         tmp .= (straps.θhat .- straps.θb[:, b]) ./ w
         infNormDist[b] = norm(tmp, Inf)
     end
