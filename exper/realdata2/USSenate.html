@@ -13086,11 +13086,11 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-julia"><pre><span></span><span class="k">using</span> <span class="n">DelimitedFiles</span><span class="p">,</span> <span class="n">JLD</span>
-<span class="k">using</span> <span class="n">KLIEPInference</span>
+<div class=" highlight hl-julia"><pre><span></span><span class="k">using</span> <span class="n">KLIEPInference</span>
 <span class="k">using</span> <span class="n">ProximalBase</span><span class="p">,</span> <span class="n">CoordinateDescent</span>
-<span class="k">using</span> <span class="n">Distributions</span>
-<span class="k">using</span> <span class="n">SparseArrays</span>
+<span class="k">using</span> <span class="n">LinearAlgebra</span><span class="p">,</span> <span class="n">SparseArrays</span><span class="p">,</span> <span class="n">Statistics</span>
+<span class="k">using</span> <span class="n">Distributions</span><span class="p">,</span> <span class="n">StatsBase</span>
+<span class="k">using</span> <span class="n">DelimitedFiles</span>
 </pre></div>
 
     </div>
@@ -13126,44 +13126,18 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-julia"><pre><span></span><span class="nd">@show</span> <span class="n">hub</span> <span class="o">=</span> <span class="n">findfirst</span><span class="p">(</span><span class="n">names</span> <span class="o">.==</span> <span class="s">&quot;Menendez&quot;</span><span class="p">)</span>
-<span class="n">nbs</span> <span class="o">=</span> <span class="n">union</span><span class="p">(</span><span class="mi">1</span><span class="o">:</span><span class="p">(</span><span class="n">hub</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">hub</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">:</span><span class="mi">100</span><span class="p">)</span>
 
-<span class="n">Ψx</span> <span class="o">=</span> <span class="n">Ψising</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="p">(</span><span class="kt">Bool</span><span class="p">,</span> <span class="n">transpose</span><span class="p">(</span><span class="n">votes</span><span class="p">[</span><span class="n">findfirst</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2006</span><span class="p">)</span><span class="o">:</span><span class="n">findlast</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2006</span><span class="p">),</span> <span class="o">:</span><span class="p">])))</span>
-<span class="n">Ψy</span> <span class="o">=</span> <span class="n">Ψising</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="p">(</span><span class="kt">Bool</span><span class="p">,</span> <span class="n">transpose</span><span class="p">(</span><span class="n">votes</span><span class="p">[</span><span class="n">findfirst</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2005</span><span class="p">)</span><span class="o">:</span><span class="n">findlast</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2005</span><span class="p">),</span> <span class="o">:</span><span class="p">])))</span>
-
-<span class="n">p</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">Ψx</span><span class="p">)</span>
-<span class="n">ny</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">Ψy</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-
-<span class="n">println</span><span class="p">(</span><span class="s">&quot;step 1&quot;</span><span class="p">)</span>
-<span class="n">λ1</span> <span class="o">=</span> <span class="mf">1.01</span> <span class="o">*</span> <span class="n">quantile</span><span class="p">(</span><span class="n">Normal</span><span class="p">(),</span> <span class="mf">1.</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span>
-<span class="n">θ</span> <span class="o">=</span> <span class="n">spKLIEP</span><span class="p">(</span><span class="n">Ψx</span><span class="p">,</span> <span class="n">Ψy</span><span class="p">,</span> <span class="n">λ1</span><span class="p">,</span> <span class="n">CD_KLIEP</span><span class="p">();</span> <span class="n">loadings</span><span class="o">=</span><span class="kc">true</span><span class="p">)</span>
-<span class="n">supp</span> <span class="o">=</span> <span class="n">findall</span><span class="p">(</span><span class="o">!</span><span class="n">iszero</span><span class="p">,</span> <span class="n">θ</span><span class="p">)</span>
-<span class="n">θ</span><span class="p">[</span><span class="n">supp</span><span class="p">]</span> <span class="o">=</span> <span class="n">KLIEP</span><span class="p">(</span><span class="n">Ψx</span><span class="p">[</span><span class="n">supp</span><span class="p">,</span> <span class="o">:</span><span class="p">],</span> <span class="n">Ψy</span><span class="p">[</span><span class="n">supp</span><span class="p">,</span> <span class="o">:</span><span class="p">],</span> <span class="n">CD_KLIEP</span><span class="p">())</span>
-
-<span class="n">println</span><span class="p">(</span><span class="s">&quot;step 2&quot;</span><span class="p">)</span>
-<span class="n">λ2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">ny</span><span class="p">)</span>
-<span class="n">H</span> <span class="o">=</span> <span class="n">KLIEP_Hessian</span><span class="p">(</span><span class="n">spzeros</span><span class="p">(</span><span class="kt">Float64</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">Ψy</span><span class="p">)</span>
-<span class="n">Hinv</span> <span class="o">=</span> <span class="kt">Vector</span><span class="p">{</span><span class="n">SparseIterate</span><span class="p">{</span><span class="kt">Float64</span><span class="p">}}(</span><span class="n">undef</span><span class="p">,</span> <span class="n">length</span><span class="p">(</span><span class="n">nbs</span><span class="p">))</span>
-
-<span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="o">:</span><span class="n">length</span><span class="p">(</span><span class="n">nbs</span><span class="p">)</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="n">KLIEPInference</span><span class="o">.</span><span class="n">trimap</span><span class="p">(</span><span class="n">hub</span><span class="p">,</span> <span class="n">nbs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-    
-    <span class="n">ω</span> <span class="o">=</span> <span class="n">Hinv_row</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ2</span><span class="p">)</span>
-    
-    <span class="n">Sk</span> <span class="o">=</span> <span class="n">sort</span><span class="p">(</span><span class="n">union</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">findall</span><span class="p">(</span><span class="o">!</span><span class="n">iszero</span><span class="p">,</span> <span class="n">ω</span><span class="p">)))</span>
-    <span class="n">Hk</span> <span class="o">=</span> <span class="n">view</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">Sk</span><span class="p">,</span> <span class="n">Sk</span><span class="p">)</span>
-    <span class="n">δk</span> <span class="o">=</span> <span class="p">(</span><span class="n">Sk</span> <span class="o">.==</span> <span class="n">k</span><span class="p">)</span>
-    <span class="n">ω</span><span class="p">[</span><span class="n">Sk</span><span class="p">]</span> <span class="o">=</span> <span class="n">Hk</span><span class="o">\</span><span class="n">δk</span>
-    
-    <span class="n">Hinv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ω</span>
+<span class="n">θ_ind</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span><span class="o">:</span><span class="mi">99</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">hub</span>
+        <span class="n">θ_ind</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">KLIEPInference</span><span class="o">.</span><span class="n">trimap</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">hub</span><span class="p">)</span>
+    <span class="k">else</span>
+        <span class="n">θ_ind</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">KLIEPInference</span><span class="o">.</span><span class="n">trimap</span><span class="p">(</span><span class="n">hub</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="n">println</span><span class="p">(</span><span class="s">&quot;step 3 + bootstrap...&quot;</span><span class="p">)</span>
-<span class="n">boot</span> <span class="o">=</span> <span class="n">boot_SparKLIE1</span><span class="p">(</span><span class="n">Ψx</span><span class="p">,</span> <span class="n">Ψy</span><span class="p">,</span> <span class="n">θ</span><span class="p">,</span> <span class="n">Hinv</span><span class="p">;</span> <span class="n">ind</span><span class="o">=</span><span class="n">nbs</span><span class="p">)</span>
-
-<span class="n">CI</span> <span class="o">=</span> <span class="n">simulCI</span><span class="p">(</span><span class="n">boot</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
-
-<span class="n">δ</span> <span class="o">=</span> <span class="n">boot</span><span class="o">.</span><span class="n">θhat</span> <span class="o">.*</span> <span class="n">broadcast</span><span class="p">(</span><span class="o">|</span><span class="p">,</span> <span class="n">CI</span><span class="p">[</span><span class="o">:</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">.&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">CI</span><span class="p">[</span><span class="o">:</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">.&lt;</span> <span class="mf">0.</span><span class="p">);</span>
+<span class="n">Ψx</span> <span class="o">=</span> <span class="n">Ψising</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="p">(</span><span class="kt">Bool</span><span class="p">,</span> <span class="n">transpose</span><span class="p">(</span><span class="n">votes</span><span class="p">[</span><span class="n">findfirst</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2006</span><span class="p">)</span><span class="o">:</span><span class="n">findlast</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2006</span><span class="p">),</span> <span class="o">:</span><span class="p">])))</span>
+<span class="n">Ψy</span> <span class="o">=</span> <span class="n">Ψising</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="p">(</span><span class="kt">Bool</span><span class="p">,</span> <span class="n">transpose</span><span class="p">(</span><span class="n">votes</span><span class="p">[</span><span class="n">findfirst</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2005</span><span class="p">)</span><span class="o">:</span><span class="n">findlast</span><span class="p">(</span><span class="n">yyyy</span> <span class="o">.==</span> <span class="mi">2005</span><span class="p">),</span> <span class="o">:</span><span class="p">])));</span>
 </pre></div>
 
     </div>
@@ -13181,9 +13155,6 @@ div#notebook {
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>hub = findfirst(names .== &#34;Menendez&#34;) = 59
-step 1
-step 2
-step 3 + bootstrap...
 </pre>
 </div>
 </div>
@@ -13197,7 +13168,102 @@ step 3 + bootstrap...
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-julia"><pre><span></span><span class="nd">@show</span> <span class="n">count</span><span class="p">(</span><span class="o">!</span><span class="n">iszero</span><span class="p">,</span> <span class="n">δ</span><span class="p">);</span>
+<div class=" highlight hl-julia"><pre><span></span><span class="n">p</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">Ψx</span><span class="p">)</span>
+<span class="n">ny</span> <span class="o">=</span> <span class="n">size</span><span class="p">(</span><span class="n">Ψy</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">println</span><span class="p">(</span><span class="s">&quot;step 1&quot;</span><span class="p">)</span>
+<span class="n">λ1</span> <span class="o">=</span> <span class="mf">1.01</span> <span class="o">*</span> <span class="n">quantile</span><span class="p">(</span><span class="n">Normal</span><span class="p">(),</span> <span class="mf">1.</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span>
+<span class="n">θ</span> <span class="o">=</span> <span class="n">spKLIEP</span><span class="p">(</span><span class="n">Ψx</span><span class="p">,</span> <span class="n">Ψy</span><span class="p">,</span> <span class="n">λ1</span><span class="p">,</span> <span class="n">CD_KLIEP</span><span class="p">();</span> <span class="n">loadings</span><span class="o">=</span><span class="kc">true</span><span class="p">)</span>
+
+<span class="n">println</span><span class="p">(</span><span class="s">&quot;step 2&quot;</span><span class="p">)</span>
+<span class="n">λ2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">ny</span><span class="p">)</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">KLIEP_Hessian</span><span class="p">(</span><span class="n">spzeros</span><span class="p">(</span><span class="kt">Float64</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">Ψy</span><span class="p">)</span>
+<span class="n">Hinv</span> <span class="o">=</span> <span class="kt">Vector</span><span class="p">{</span><span class="n">SparseIterate</span><span class="p">{</span><span class="kt">Float64</span><span class="p">}}(</span><span class="n">undef</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">1</span><span class="o">:</span><span class="mi">99</span>
+    <span class="n">ω</span> <span class="o">=</span> <span class="n">Hinv_row</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">θ_ind</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">λ2</span><span class="p">)</span>
+
+    <span class="n">supp</span> <span class="o">=</span> <span class="n">KLIEPInference</span><span class="o">.</span><span class="n">_find_supp</span><span class="p">(</span><span class="n">θ_ind</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">ω</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">view</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">supp</span><span class="p">,</span> <span class="n">supp</span><span class="p">)</span>
+    <span class="n">δ</span> <span class="o">=</span> <span class="p">(</span><span class="n">supp</span> <span class="o">.==</span> <span class="n">θ_ind</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="n">ω</span><span class="p">[</span><span class="n">supp</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">\</span><span class="n">δ</span>
+
+    <span class="n">Hinv</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">ω</span>
+<span class="k">end</span>
+
+<span class="n">println</span><span class="p">(</span><span class="s">&quot;step 3 + bootstrap...&quot;</span><span class="p">)</span>
+<span class="n">boot1</span><span class="p">,</span> <span class="n">boot2</span> <span class="o">=</span> <span class="n">boot_SparKLIE</span><span class="p">(</span><span class="n">Ψx</span><span class="p">,</span> <span class="n">Ψy</span><span class="p">,</span> <span class="n">θ</span><span class="p">,</span> <span class="n">Hinv</span><span class="p">,</span> <span class="n">θ_ind</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>step 1
+step 2
+step 3 + bootstrap...
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-julia"><pre><span></span><span class="n">CI</span> <span class="o">=</span> <span class="n">simulCI</span><span class="p">(</span><span class="n">boot1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+
+<span class="n">δ</span> <span class="o">=</span> <span class="n">boot1</span><span class="o">.</span><span class="n">θhat</span> <span class="o">.*</span> <span class="n">broadcast</span><span class="p">(</span><span class="o">|</span><span class="p">,</span> <span class="n">CI</span><span class="p">[</span><span class="o">:</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">.&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">CI</span><span class="p">[</span><span class="o">:</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">.&lt;</span> <span class="mf">0.</span><span class="p">)</span>
+
+<span class="nd">@show</span> <span class="n">count</span><span class="p">(</span><span class="o">!</span><span class="n">iszero</span><span class="p">,</span> <span class="n">δ</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>count(!iszero, δ) = 0
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-julia"><pre><span></span><span class="n">CI</span> <span class="o">=</span> <span class="n">simulCI</span><span class="p">(</span><span class="n">boot2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+
+<span class="n">δ</span> <span class="o">=</span> <span class="n">boot2</span><span class="o">.</span><span class="n">θhat</span> <span class="o">.*</span> <span class="n">broadcast</span><span class="p">(</span><span class="o">|</span><span class="p">,</span> <span class="n">CI</span><span class="p">[</span><span class="o">:</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">.&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">CI</span><span class="p">[</span><span class="o">:</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">.&lt;</span> <span class="mf">0.</span><span class="p">)</span>
+
+<span class="nd">@show</span> <span class="n">count</span><span class="p">(</span><span class="o">!</span><span class="n">iszero</span><span class="p">,</span> <span class="n">δ</span><span class="p">);</span>
 </pre></div>
 
     </div>
