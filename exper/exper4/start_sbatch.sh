@@ -1,11 +1,17 @@
 #!/bin/bash
 
-for numChanges in "1" "3" "5"
+for m in "25" "50" "100"
 do
-  for lbInd in {1..11}
+  for sgn in "1"
   do
-    echo "sbatch 100 1 ${numChanges} ${lbInd} ..."
-    sbatch --job-name=exp2_100_1_${numChanges}_${lbInd}_500_500 sbatch_exp2 100 1 ${numChanges} ${lbInd} 500 500
-    echo "... done"
+    for numChanges in "1" "3" "5"
+    do
+      for lbInd in {1..11}
+      do
+        echo "sbatch ${m} ${sgn} ${numChanges} ${lbInd} ..."
+        sbatch --job-name=exp4_${m}_${sgn}_${numChanges}_${lbInd} sbatch_exp4 ${m} ${sgn} ${numChanges} ${lbInd}
+        echo "... done"
+      done
+    done
   done
 done

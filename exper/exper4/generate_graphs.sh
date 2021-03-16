@@ -1,11 +1,17 @@
 #!/bin/bash
 
-for numChanges in "1" "3" "5"
+for m in "25" "50" "100"
 do
-  for lbInd in {1..11}
+  for sgn in "1"
   do
-    echo "jl1 exp2_generate_graph.jl 100 1 ${numChanges} ${lbInd} ..."
-    jl1 exp2_generate_graph.jl 100 1 ${numChanges} ${lbInd}
-    echo "... done"
+    for numChanges in "1" "3" "5"
+    do
+      for lbInd in {1..11}
+      do
+        echo "jl exp4_generate_graph.jl ${m} ${sgn} ${numChanges} ${lbInd} ..."
+        jl exp4_generate_graph.jl ${m} ${sgn} ${numChanges} ${lbInd}
+        echo "... done"
+      done
+    done
   done
 done
