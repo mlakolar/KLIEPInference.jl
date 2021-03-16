@@ -1,7 +1,6 @@
 using KLIEPInference
-using Distributions
 using LinearAlgebra, Random
-using JLD
+using Distributions, JLD
 
 Random.seed!(543)
 

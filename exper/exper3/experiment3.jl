@@ -1,11 +1,16 @@
+m = parse(Int, ARGS[1])
+sgn = parse(Int, ARGS[2])
+rep = parse(Int, ARGS[3])
+
+if isfile("/scratch/midway2/byolkim/exper3/res_$(m)_$(sgn)_$(rep).jld")
+    println("the file already exists!")
+    exit()
+end
+
 using KLIEPInference
 using ProximalBase, CoordinateDescent
 using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
-
-m = parse(Int, ARGS[1])
-sgn = parse(Int, ARGS[2])
-rep = parse(Int, ARGS[3])
 
 println("importing parameters from params_exp3_$(m)_$(sgn).jld...")
 file = jldopen("params_exp3_$(m)_$(sgn).jld", "r")
@@ -37,7 +42,7 @@ H = KLIEP_Hessian(spzeros(Float64, p), Ψy)
 Hinv = Vector{SparseIterate{Float64}}(undef, p)
 for k = 1:p
     ω = Hinv_row(H, k, λ2)
-    
+
     supp = KLIEPInference._find_supp(k, ω)
     h = view(H, supp, supp)
     δ = (supp .== k)
