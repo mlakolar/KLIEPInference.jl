@@ -1,8 +1,9 @@
 set = ARGS[1]
 δ = parse(Float64, ARGS[2])
 rep = parse(Int, ARGS[3])
+scratch_dir = ARGS[4]   # e.g. "/scratch/midway2/byolkim/exper2"
 
-if isfile("/scratch/midway2/byolkim/exper2/res_$(set)_$(δ)_$(rep).jld")
+if isfile("$(scratch_dir)/res_$(set)_$(δ)_$(rep).jld")
     println("the file already exists!")
     exit()
 end
@@ -60,7 +61,7 @@ supp = KLIEPInference._find_supp(idx, θ, ω)
 
 T2 = abs(θ2 / σ) > quantile(Normal(), 0.975) ? 1 : 0
 
-println("saving results to /scratch/midway2/byolkim/exper2/res_$(set)_$(δ)_$(rep).jld")
-@save "/scratch/midway2/byolkim/exper2/res_$(set)_$(δ)_$(rep).jld" T1 T2
+println("saving results to $(scratch_dir)/res_$(set)_$(δ)_$(rep).jld")
+@save "$(scratch_dir)/res_$(set)_$(δ)_$(rep).jld" T1 T2
 
 println("done!")
