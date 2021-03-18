@@ -1,4 +1,5 @@
 #!/bin/bash
+alias jl='julia'
 
 for m in "25" "50" "100"
 do
