@@ -21,3 +21,7 @@ You will also need to install the following packages.
 
 `using Pkg; Pkg.add("JLD")`
 
+- Distributions
+
+`using Pkg; Pkg.add("Distributions")`
+
