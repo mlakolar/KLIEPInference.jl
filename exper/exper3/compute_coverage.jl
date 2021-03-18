@@ -7,7 +7,7 @@ for m in [25, 50, 100]
         nrep = 0
         for rep in 1:1000
             try
-                file = jldopen("/scratch/midway2/byolkim/exper3/res_$(m)_$(sgn)_$(rep).jld", "r")
+                file = jldopen("./res/res_$(m)_$(sgn)_$(rep).jld", "r")
                 res = read(file, "res")
                 close(file)
 
@@ -23,6 +23,6 @@ for m in [25, 50, 100]
 
         coverage = broadcast(/, coverage, nrep)
 
-        @save "/scratch/midway2/byolkim/exper3/coverage_$(m)_$(sgn).jld" coverage
+        @save "./res/coverage_$(m)_$(sgn).jld" coverage
     end
 end
