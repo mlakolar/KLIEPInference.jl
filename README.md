@@ -15,11 +15,15 @@ You can obtain KLIEPInference using Julia's Pkg REPL-mode (hitting `]` as the fi
 (@v1.5) pkg> add https://github.com/mlakolar/KLIEPInference.jl
 ```
 
-You will also need to install the following packages.
+You will also need to install the following software.
 
-- JLD, Distributions, StatsBase, Pyplot, IJulia
+- JLD, Distributions, ProximalBase, CoordinateDescent, StatsBase, Pyplot, IJulia.
 
-`using Pkg; Pkg.add.(["JLD", "Distributions", "StatsBase", "Pyplot", "IJulia"])`
+`using Pkg; Pkg.add.(["JLD", "Distributions", "ProximalBase", "CoordinateDescent", "StatsBase", "Pyplot", "IJulia"])`
+
+- GNU Parallel.
+
+You can install this package using `sudo apt install parallel`.
 
 ### Reproducing experimental results
 
