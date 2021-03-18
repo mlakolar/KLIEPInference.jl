@@ -1,7 +1,7 @@
 using KLIEPInference
 using JLD
 
-file = jldopen("exper/exper1/graphs/chain1_25.jld", "r")
+file = jldopen("../exper1/graphs/chain1_25.jld", "r")
 γy = pack(read(file, "Θy"))
 close(file)
 
@@ -10,7 +10,7 @@ idx0 = KLIEPInference.trimap(5, 6)
 for δ in -0.75:0.05:0.75
     γx = γy
     γx[idx0] += δ
-    @save "exper/exper2/graphs/params_exp2_set1_$(δ).jld" γx γy
+    @save "graphs/params_exp2_set1_$(δ).jld" γx γy
 end
 
 # setting 2. (strong)
@@ -21,18 +21,18 @@ for δ in -0.75:0.05:0.75
     γx[idx0] += δ
     γx[idx1] += 0.4
     γx[idx2] -= 0.4
-    @save "exper/exper2/graphs/params_exp2_set2_$(δ).jld" γx γy
+    @save "graphs/params_exp2_set2_$(δ).jld" γx γy
 end
 
 # setting 3. (weak)
 idx3 = KLIEPInference.trimap(4, 6)
 idx4 = KLIEPInference.trimap(5, 7)
-for δ in δs
+for δ in -0.75:0.05:0.75
     γx = γy
     γx[idx0] += δ
     γx[idx3] += 0.2
     γx[idx4] += 0.2
-    @save "exper/exper2/graphs/params_exp2_set3_$(δ).jld" γx γy
+    @save "graphs/params_exp2_set3_$(δ).jld" γx γy
 end
 
 # setting 4. (mixed)
@@ -43,5 +43,5 @@ for δ in -0.75:0.05:0.75
     γx[idx2] -= 0.4
     γx[idx3] += 0.2
     γx[idx4] += 0.2
-    @save "exper/exper2/graphs/params_exp2_set4_$(δ).jld" γx γy
+    @save "graphs/params_exp2_set4_$(δ).jld" γx γy
 end
