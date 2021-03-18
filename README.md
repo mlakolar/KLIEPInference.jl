@@ -17,7 +17,10 @@ You can obtain KLIEPInference using Julia's Pkg REPL-mode (hitting `]` as the fi
 
 You will also need to install the following packages.
 
-- JLD
+- JLD, Distributions, StatsBase, Pyplot, IJulia
 
-`using Pkg; Pkg.add("JLD")`
+`using Pkg; Pkg.add.(["JLD", "Distributions", "StatsBase", "Pyplot", "IJulia"])`
 
+### Reproducing experimental results
+
+Please read "README" at each experiment folder. 
