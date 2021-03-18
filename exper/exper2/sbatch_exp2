@@ -1,22 +1,24 @@
 #!/bin/bash
 
 #SBATCH --ntasks=32
-#SBATCH --partition=standard
-#SBATCH --time=7-00:00:00
+#SBATCH --partition=broadwl
+#SBATCH --time=1-12:00:00
 
-# module load parallel
-# module load hdf5
+module load parallel
+module load hdf5
 
 
-SCRATCH=/scratch/mkolar/KLIEP/out/$SLURM_JOB_NAME
-JL=/project/mkolar_space/julia-1.5.4/bin/julia
+#SCRATCH=/scratch/mkolar/KLIEP/out/$SLURM_JOB_NAME
+SCRATCH=/scratch/midway2/mkolar/KLIEP/out/$SLURM_JOB_NAME
+#JL=/project/mkolar_space/julia-1.5.4/bin/julia
+JL=/project2/mkolar/julia-1.5.4/bin/julia
 
 para="parallel -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume"
 srun="srun --exclusive -N1 -n1"
 err="--error=$SCRATCH/$SLURM_JOB_NAME.err.{1}"
 out="--output=$SCRATCH/$SLURM_JOB_NAME.out.{1}"
  
-$para $srun $err $out $JL experiment2.jl ${1} ${2} {1} /scratch/mkolar/KLIEP/$SLURM_JOB_NAME ::: {1..1000}
+$para $srun $err $out $JL experiment2.jl ${1} ${2} {1} /scratch/midway2/mkolar/KLIEP/$SLURM_JOB_NAME ::: {1..1000}
 
 
 
