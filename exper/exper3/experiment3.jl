@@ -2,7 +2,7 @@ m = parse(Int, ARGS[1])
 sgn = parse(Int, ARGS[2])
 rep = parse(Int, ARGS[3])
 
-if isfile("/scratch/midway2/byolkim/exper3/res_$(m)_$(sgn)_$(rep).jld")
+if isfile("./res/res_$(m)_$(sgn)_$(rep).jld")
     println("the file already exists!")
     exit()
 end
@@ -66,7 +66,7 @@ for i in 1:nα
     res[2, i] = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 end
 
-println("saving results to /scratch/midway2/byolkim/exper3/res_$(m)_$(sgn)_$(rep).jld")
-@save "/scratch/midway2/byolkim/exper3/res_$(m)_$(sgn)_$(rep).jld" res
+println("saving results to ./res/res_$(m)_$(sgn)_$(rep).jld")
+@save "./res/res_$(m)_$(sgn)_$(rep).jld" res
 
 println("done!")
