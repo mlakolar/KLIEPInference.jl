@@ -17,9 +17,9 @@ You can obtain KLIEPInference using Julia's Pkg REPL-mode (hitting `]` as the fi
 
 You will also need to install the following software.
 
-- JLD, Distributions, ProximalBase, CoordinateDescent, StatsBase, Pyplot, IJulia.
+- JLD, Distributions, ProximalBase, CoordinateDescent, StatsBase, PyPlot, IJulia.
 
-`using Pkg; Pkg.add.(["JLD", "Distributions", "ProximalBase", "CoordinateDescent", "StatsBase", "Pyplot", "IJulia"])`
+`using Pkg; Pkg.add.(["JLD", "Distributions", "ProximalBase", "CoordinateDescent", "StatsBase", "PyPlot", "IJulia"])`
 
 - GNU Parallel.
 
