@@ -1,0 +1,16 @@
+language: julia
+
+julia:
+  - 1.5
+
+os:
+  - linux
+
+notifications:
+  email: mkolar@gmail.com
+
+script:
+  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(; verbose = true); Pkg.test(coverage=true)'
+
+after_success:
+  - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
