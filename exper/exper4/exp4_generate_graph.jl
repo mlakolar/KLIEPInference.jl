@@ -25,4 +25,4 @@ end
 @show ind_nz = findall(!iszero, θ)
 @show θ[ind_nz]
 
-@save "params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" m sgn γx γy
+@save "./graphs/params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" m sgn γx γy
