@@ -1,7 +1,7 @@
 module UtilTest
 
 using Test
-import KLIEPInference: trimap, itrimap
+import KLIEPInference: trimap, itrimap, pack, unpack, Ψising
 
 @testset "trimap" begin
     @test trimap(2, 1) == 1
@@ -12,4 +12,25 @@ import KLIEPInference: trimap, itrimap
 	@test itrimap(6) == CartesianIndex(4, 3)
 end
 
+@testset "pack" begin
+	A = [1. 2.; 2. 3.]
+	θ = [2.]
+	@test pack(A) == θ
+	@test unpack(θ) == [0. 2.; 2. 0]
+
+	A = [1. 2. 3.; 2. 2. 0.5; 3. 0.5 3.]
+	θ = [2., 3., 0.5]
+	@test pack(A) == θ
+	@test unpack(θ) == [0. 2. 3.; 2. 0. 0.5; 3. 0.5 0.]
 end
+
+@testset "Ising" begin
+	X = Array{Bool}([1 1; 0 1; 0 0; 1 0])
+	Ψ = [-1. 1; -1 -1; 1 -1; 1 -1; -1 -1; -1 1]	
+	@test Ψising(X) == Ψ
+end
+
+end
+
+
+

@@ -1,7 +1,6 @@
-set = ARGS[1]
-δ = parse(Float64, ARGS[2])
-rep = parse(Int, ARGS[3])
-scratch_dir = ARGS[4]   # e.g. "/scratch/midway2/byolkim/exper2"
+set = "set1"
+δ = 0.0
+scratch_dir = "tmp"
 
 if isfile("$(scratch_dir)/res_$(set)_$(δ)_$(rep).jld")
     println("the file already exists!")
