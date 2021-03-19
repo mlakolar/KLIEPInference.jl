@@ -25,6 +25,10 @@ You will also need to install the following software.
 
 You can install this package using `sudo apt install parallel`.
 
+- Jupyter Notebook.
+
+Follow instructions [here](https://jupyter.org/install).
+
 ### Reproducing experimental results
 
 Please read "README" at each experiment folder. 
