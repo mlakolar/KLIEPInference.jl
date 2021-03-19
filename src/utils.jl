@@ -7,11 +7,13 @@ end
 
 KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected=false)
 
-
 # Computes the sufficient statistics for an Ising mode
-# Observations are columns of X
+#
 #    Ψ(x, y) = -1. if x == y
 #    Ψ(x, y) =  1. if x != y
+#
+# Observations are columns of X
+# 
 # Output
 #    matrix with columns corresponding to observations 
 #    rows are sufficients statistics Ψ(xa, xb)

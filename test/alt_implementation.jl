@@ -1,24 +1,23 @@
 module Alt
 
 using KLIEPInference
-import JuMP, MathOptInterface, MathOptInterfaceMosek, SCS
-const MOI = MathOptInterface
-
+using LinearAlgebra
+import JuMP, SCS, MathOptInterface, MosekTools
 
 export
   SCS_KLIEP,
   Mosek_KLIEP
 
-
 struct SCS_KLIEP <: KLIEPSolver end
 struct Mosek_KLIEP <: KLIEPSolver end
 
-
-KLIEP(Ψx, Ψy, ::SCS_KLIEP) = _KLIEP(Ψx, Ψy, JuMP.with_optimizer(SCS.Optimizer, verbose=1))
-KLIEP(Ψx, Ψy, ::Mosek_KLIEP) = _KLIEP(Ψx, Ψy, JuMP.with_optimizer(MathOptInterfaceMosek.MosekOptimizer, QUIET=false))
+KLIEP(Ψx, Ψy, ::SCS_KLIEP) = 
+  _KLIEP(Ψx, Ψy, JuMP.optimizer_with_attributes(SCS.Optimizer, "verbose" => 1))
+KLIEP(Ψx, Ψy, ::Mosek_KLIEP) = 
+  _KLIEP(Ψx, Ψy, JuMP.optimizer_with_attributes(MosekTools.Mosek.Optimizer, "QUIET" => false))
 
 spKLIEP(Ψx, Ψy, λ, ::SCS_KLIEP) =
-  _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.with_optimizer(SCS.Optimizer, verbose=1))
+  _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.with_optimizer(SCS.Optimizer, "verbose" => 1))
 
 
 ### solvers
@@ -37,13 +36,13 @@ function _KLIEP(Ψx, Ψy, solver)
 
   JuMP.@constraint(problem, sum(u) <= 1.)
   for j=1:ny
-      JuMP.@constraint(problem, [dot(Θ, Ψy[:, j]) - t - lny, 1., u[j]] in MOI.ExponentialCone())
+      JuMP.@constraint(problem, [dot(Θ, Ψy[:, j]) - t - lny, 1., u[j]] in MathOptInterface.ExponentialCone())
   end
 
   JuMP.@objective(problem, Min, -sum(Ψx'*Θ) / nx + t)
   JuMP.optimize!(problem)
 
-  JuMP.result_value.(Θ)
+  JuMP.value.(Θ)
 end
 
 function _spKLIEP!(θhat, Ψx, Ψy, λ, solver)
