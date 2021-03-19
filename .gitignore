@@ -6,6 +6,5 @@ deps/deps.jl
 *~
 *.log
 *.DS_Store
-exper/exper1/exper1_*.png
-exper/exper3/params_exp3_*
 exper/exper3/res/*.jld
+exper/exper4/res/*.jld

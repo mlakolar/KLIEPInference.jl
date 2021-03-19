@@ -3,11 +3,10 @@
 ## call this file as
 ##   sbatch --job-name=exp4_m_sgn sbatch_exp4 m sgn numChanges lbInd
 
-#SBATCH --partition=broadwl
+#SBATCH --partition=cpu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
 #SBATCH --time=1-12:00:00
-#SBATCH --ntasks=112
 
-module load parallel
-module load hdf5
-
-parallel --delay .2 -j $SLURM_NTASKS --joblog __$SLURM_JOB_NAME.runtask.log --resume srun --exclusive -N1 -n1 --error=/scratch/midway2/byolkim/exper4/err/$SLURM_JOB_NAME.err.{1} --output=/scratch/midway2/byolkim/exper4/out/$SLURM_JOB_NAME.out.{1} /project2/mkolar/julia-1.5.0/bin/julia experiment4.jl ${1} ${2} ${3} ${4} {1} ::: {1..1000}
+parallel --delay .2 -j 16 --joblog __$SLURM_JOB_NAME.runtask.log  julia experiment4.jl ${1} ${2} ${3} ${4} {1} ::: {1..16}

@@ -8,8 +8,8 @@ do
     do
       for lbInd in {1..11}
       do
-        echo "julia exp4_generate_graph.jl ${m} ${sgn} ${numChanges} ${lbInd} ..."
-        julia exp4_generate_graph.jl ${m} ${sgn} ${numChanges} ${lbInd}
+        echo "sbatch ${m} ${sgn} ${numChanges} ${lbInd} ..."
+        parallel --delay .2 julia experiment4.jl ${m} ${sgn} ${numChanges} ${lbInd} {1} ::: {1..2}
         echo "... done"
       done
     done

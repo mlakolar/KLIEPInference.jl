@@ -4,7 +4,7 @@ numChanges = parse(Int,ARGS[3])
 lbInd = parse(Int,ARGS[4])
 rep = parse(Int, ARGS[5])
 
-if isfile("/scratch/midway2/byolkim/exper4/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld")
+if isfile("./res/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld")
     println("the file already exists!")
     exit()
 end
@@ -69,4 +69,4 @@ W1 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 CI = simulCIstudentized(boot2, 0.05)
 W2 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 
-@save "/scratch/midway2/byolkim/exper4/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld" T1 T2 W1 W2
+@save "./res/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld" T1 T2 W1 W2
