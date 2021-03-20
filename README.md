@@ -1,5 +1,8 @@
 # KLIEPInference.jl
 
+[![Testing](https://github.com/mlakolar/KLIEPInference.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/mlakolar/KLIEPInference.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mlakolar/KLIEPInference.jl/branch/master/graph/badge.svg?token=XVJH400GOY)](https://codecov.io/gh/mlakolar/KLIEPInference.jl)
+
 Code for the paper
 _Two-sample inference for high-dimensional Markov networks_
 by _Byol Kim_, _Song Liu_, and  _Mladen Kolar_. [arXiv: 1905.00466](https://arxiv.org/abs/1905.00466)
