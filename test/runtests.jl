@@ -1,7 +1,7 @@
 
 tests = [
-  #"utils",
-  "solver"
+  "utils",
+  #"solver"
 ]
 
 for t in tests

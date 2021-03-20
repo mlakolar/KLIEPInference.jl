@@ -1,6 +1,7 @@
 module UtilTest
 
 using Test
+using Statistics
 import KLIEPInference: trimap, itrimap, pack, unpack, Ψising
 
 @testset "trimap" begin
@@ -27,7 +28,9 @@ end
 @testset "Ising" begin
 	X = Array{Bool}([1 1; 0 1; 0 0; 1 0])
 	Ψ = [-1. 1; -1 -1; 1 -1; 1 -1; -1 -1; -1 1]	
-	@test Ψising(X) == Ψ
+	@test (@test_logs (:warn, "a row of Ψ has zero variance") Ψising(X)) == Ψ
+
+
 end
 
 end

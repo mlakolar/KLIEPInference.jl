@@ -32,6 +32,14 @@ function Ψising(X)
             end
         end
     end
+
+    # test that all the sufficient statistics
+    # have variance different from zero
+    for j=1:p
+        if iszero(var(view(out, j, :)))
+            @warn "a row of Ψ has zero variance"
+        end
+    end
     out
 end
 
