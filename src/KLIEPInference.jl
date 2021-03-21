@@ -7,6 +7,7 @@ using ProximalBase, CoordinateDescent
 export
     IsingSampler,
     chain,
+    kary_tree,
     removeEdges!,
     addEdges!,
 
