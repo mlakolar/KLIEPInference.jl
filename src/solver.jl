@@ -46,6 +46,7 @@ end
 spKLIEP(Ψx, Ψy, λ, ::CD_KLIEP; loadings=true) = 
     (loadings ? spKLIEP_scaled!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ) : spKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ))
 
+# Invert row of a Hessian using the scaled lasso
 function Hinv_row(H, row, λ0)
     p = size(H, 1)
     e = zeros(p)

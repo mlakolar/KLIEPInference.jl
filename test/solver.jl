@@ -12,7 +12,7 @@ import .Alt
 
 @testset "KLIEP low dim" begin
     Random.seed!(3)
-    θx = chain(6, 3, 0.2, 0.4, 0)
+    θx = chain(6; lenC=3, lb=0.2, ub=0.4, sgn=0)
     θy = copy(θx)
 
     nx = 500
@@ -33,7 +33,7 @@ end
 
 @testset "spKLIEP delta == 0" begin
     Random.seed!(4)
-    θx = chain(30, 10, 0.1, 0.3, 0)
+    θx = chain(30; lenC=10, lb=0.1, ub=0.3, sgn=0)
     θy = copy(θx)
 
     nx = 300
@@ -58,7 +58,7 @@ end
 
 @testset "spKLIEP delta != 0" begin
     Random.seed!(5)
-    θx = chain(30, 10, 0.1, 0.3, 0)
+    θx = chain(30; lenC=10, lb=0.1, ub=0.3, sgn=0)
     θy = copy(θx)
     p = length(θx)  
     Δ = sprand(p, 0.1)
