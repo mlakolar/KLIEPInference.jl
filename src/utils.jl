@@ -13,9 +13,9 @@ KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected
 #    Ψ(x, y) =  1. if x != y
 #
 # Observations are columns of X
-# 
+#
 # Output
-#    matrix with columns corresponding to observations 
+#    matrix with columns corresponding to observations
 #    rows are sufficients statistics Ψ(xa, xb)
 #    the order corresponds to the packed order where
 #    lower triangular part is mapped row by row
@@ -73,19 +73,19 @@ end
 
 # maps (i, j) coordinate of a symmetric matrix to a packed format
 # diagonal of the matrix is not included
-# lower triangular part is mapped row by row
+# upper triangular part is mapped col by col
 function trimap(i::Integer, j::Integer)
-    if i < j
+    if i > j
         trimap(j, i)
     else
-        j + div((i - 1) * (i - 2), 2)
+        i + div((j - 1) * (j - 2), 2)
     end
 end
 
 # mapping from packed storage to (i, j)
 function itrimap(k::Integer)
-    i = convert(Int, ceil((1. + sqrt(1. + 8. * k)) / 2.))
-    j = k - div((i - 1) * (i - 2), 2)
+    j = convert(Int, ceil((1. + sqrt(1. + 8. * k)) / 2.))
+    i = k - div((j - 1) * (j - 2), 2)
     CartesianIndex(i, j)
 end
 

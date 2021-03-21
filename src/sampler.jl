@@ -90,7 +90,7 @@ end
 # the graph consists of p / lenC chains
 # sgn +1, 0, -1 --- whether edges are positive, mixed, or negative
 # lb and ub are assumed positive
-function chain(p::Integer, lenC::Integer=10, lb::Float64=0.1, ub::Float64=0.3, sgn::Integer=1)
+function chain(p::Integer; lenC::Integer=10, lb::Float64=0.1, ub::Float64=0.3, sgn::Integer=1)
     mod(p, lenC) == 0 || throw(ArgumentError("p=$p should be divisible by lenC=$lenC"))
     m = div(p*(p-1), 2)
     θ = zeros(Float64, m)
@@ -113,6 +113,47 @@ function chain(p::Integer, lenC::Integer=10, lb::Float64=0.1, ub::Float64=0.3, s
     θ
 end
 
+# k --- # of children
+# the graph is a k-ary tree on p nodes
+# sgn +1, 0, -1 --- whether edges are positive, mixed, or negative
+# lb and ub are assumed positive
+function kary_tree(p::Integer; k::Integer=3, lb::Float64=0.1, ub::Float64=0.3, sgn::Integer=1)
+    k > 1 || throw(ArgumentError("k=$k should be at least 2"))
+    m = div(p * (p - 1), 2)
+    θ = zeros(Float64, m)
+
+    du = Uniform(lb, ub)
+
+    depth = ceil(Int64, log(k, (k - 1) * p + 1) -1)
+
+    youngest = cumsum(k.^(0:depth))
+    youngest[end] = p
+
+    children = (youngest[1] + 1):youngest[2]
+    for j in children
+        v = rand(du)
+        if sgn == -1
+            v *= -1.
+        elseif sgn == 0
+            v *= 2. * rand(Bernoulli()) - 1.
+        end
+        θ[trimap(1, j)] = v
+    end
+    for d = 2:depth
+        children = (youngest[d] + 1):youngest[d + 1]
+        for j in children
+            i = fld(j - youngest[d] - 1, k) + youngest[d-1] + 1
+            v = rand(du)
+            if sgn == -1
+                v *= -1.
+            elseif sgn == 0
+                v *= 2. * rand(Bernoulli()) - 1.
+            end
+            θ[trimap(i, j)] = v
+        end
+    end
+    θ
+end
 
 function removeEdges!(θ, numChanges::Integer=4)
     ind_change = sample(findall(!iszero, θ), numChanges; replace=false)
