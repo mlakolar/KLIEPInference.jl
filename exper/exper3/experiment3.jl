@@ -12,7 +12,7 @@ using ProximalBase, CoordinateDescent
 using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
 
-println("importing parameters from params_exp3_$(m)_$(sgn).jld...")
+println("importing parameters from params_exp3_$(m)_$(sgn).jld")
 file = jldopen("./graphs/params_exp3_$(m)_$(sgn).jld", "r")
 θx = read(file, "θx")
 θy = read(file, "θy")
@@ -22,7 +22,7 @@ p = length(θx)
 nx = 500
 ny = 500
 
-println("generating samples...")
+println("generating samples")
 Random.seed!(123 + rep)
 spl = IsingSampler(θx; thin=2000)
 X = rand(spl, nx)
@@ -51,10 +51,10 @@ for k = 1:p
     Hinv[k] = ω
 end
 
-println("step 3 + bootstrap...")
+println("step 3 + bootstrap")
 boot1, boot2 = boot_SparKLIE(Ψx, Ψy, θ, Hinv)
 
-println("step 3 + bootstrap completed, computing coverage...")
+println("step 3 + bootstrap completed, computing coverage")
 α = 0.05:0.05:0.95
 nα = length(α)
 res = zeros(Bool, 2, nα)

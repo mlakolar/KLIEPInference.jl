@@ -1,6 +1,6 @@
 function _debias1(Ψx, Ψy, θ, ω, θ_ind::Int; refit=true)
     μx = vec(mean(Ψx, dims=2))
-    if refit === false
+    if refit == false
         r = rhat(θ, Ψy)
         θ1 = θ[θ_ind]
         for l in findall(!iszero, ω)
@@ -23,7 +23,7 @@ end
 function _debias1(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; refit=true)
     θ1 = Vector{Float64}(undef, length(θ_ind))
     μx = vec(mean(Ψx, dims=2))
-    if refit === false
+    if refit == false
         for k in 1:length(θ_ind)
             r = rhat(θ, Ψy)
             θ1[k] = θk[θ_ind[k]]

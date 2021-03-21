@@ -52,7 +52,7 @@ function _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
 end
 
 function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples, debias)
-    if !(size(Ψx, 1) === size(Ψy, 1) === length(θ))
+    if !(size(Ψx, 1) == size(Ψy, 1) == length(θ))
         throw(DimensionMismatch("size(Ψx, 1) = $(size(Ψx, 1)), size(Ψy, 1) = $(size(Ψy, 1)), and length(θ) = $(length(θ)) are not all equal"))
     end
     if length(Hinv) !== length(θ_ind)
@@ -66,11 +66,11 @@ function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}
         sample!(1:nx, view(x_ind, :, b))
         sample!(1:ny, view(y_ind, :, b))
     end
-    if debias === 1
+    if debias == 1
         θ1 = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
         bθ1 = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
         return BootstrapEstimates(θ1, bθ1)
-    elseif debias === 2
+    elseif debias == 2
         θ2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
         bθ2 = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
         return BootstrapEstimates(θ2, bθ2)

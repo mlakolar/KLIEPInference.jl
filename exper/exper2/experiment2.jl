@@ -12,7 +12,7 @@ using ProximalBase, CoordinateDescent
 using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
 
-println("importing parameters from params_exp2_$(set)_$(δ).jld...")
+println("importing parameters from params_exp2_$(set)_$(δ).jld")
 file = jldopen("graphs/params_exp2_$(set)_$(δ).jld", "r")
 γx = read(file, "γx")
 γy = read(file, "γy")
@@ -24,7 +24,7 @@ p = length(γx)
 nx = 150
 ny = 300
 
-println("generating samples...")
+println("generating samples")
 Random.seed!(123 + rep)
 spl = IsingSampler(γx; thin=2000)
 X = rand(spl, nx)

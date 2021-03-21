@@ -14,7 +14,7 @@ using ProximalBase, CoordinateDescent
 using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
 
-println("importing parameters from params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld...")
+println("importing parameters from params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld")
 file = jldopen("./graphs/params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
 γx = read(file, "γx")
 γy = read(file, "γy")
@@ -24,7 +24,7 @@ p = length(γx)
 nx = 500
 ny = 500
 
-println("generating samples...")
+println("generating samples")
 Random.seed!(123 + rep)
 spl = IsingSampler(γx; thin=2000)
 X = rand(spl, nx)
@@ -53,10 +53,10 @@ for k = 1:p
     Hinv[k] = ω
 end
 
-println("step 3 + bootstrap...")
+println("step 3 + bootstrap")
 boot1, boot2 = boot_SparKLIE(Ψx, Ψy, θ, Hinv)
 
-println("step 3 + bootstrap completed, testing at α = 0.05...")
+println("step 3 + bootstrap completed, testing at α = 0.05")
 CI = simulCI(boot1, 0.05)
 T1 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 
@@ -69,4 +69,7 @@ W1 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 CI = simulCIstudentized(boot2, 0.05)
 W2 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
 
+println("saving results to ./res/res_$(m)_$(sgn)_$(rep).jld")
 @save "./res/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld" T1 T2 W1 W2
+
+println("done!")

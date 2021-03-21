@@ -1,4 +1,8 @@
-struct CD_SymKLIEP <: KLIEPSolver end
+####################################
+#
+# symmetric KLIEP loss
+#
+####################################
 
 struct CDSymKLIEPLoss <: CoordinateDifferentiableFunction
     μx::Vector{Float64}   # mean(Ψx, dims = 2)
@@ -74,32 +78,14 @@ function CoordinateDescent.descendCoordinate!(
 end
 
 
-function SymKLIEP_Hessian(θ, Ψx, Ψy)
-    m, ny = size(Ψy)
-
-    wx = -transpose(Ψx) * θ
-    wx .= exp.(wx)
-    wx ./= mean(wx)
-
-    wy = transpose(Ψy) * θ
-    wy .= exp.(wy)
-    wy ./= mean(wy)
-
-    StatsBase.cov(Ψx, weights(wx), 2; corrected=false) + StatsBase.cov(Ψy, weights(wy), 2; corrected=false)
-end
-
-####################################
-#
-# symmetric KLIEP loss
-#
-####################################
+# symmetric KLIEP solver
+struct CD_SymKLIEP <: KLIEPSolver end
 
 SymKLIEP(Ψx, Ψy, ::CD_SymKLIEP) = SymKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy)
 
 function SymKLIEP!(x::SparseIterate, Ψx, Ψy)
     f = CDSymKLIEPLoss(Ψx, Ψy)
     g = ProxZero()
-
     coordinateDescent!(x, f, g)
 end
 
@@ -108,170 +94,49 @@ spSymKLIEP(Ψx, Ψy, λ, ::CD_SymKLIEP) = spSymKLIEP!(SparseIterate(size(Ψx, 1)
 function spSymKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
     f = CDSymKLIEPLoss(Ψx, Ψy)
     g = ProxL1(λ)
-
     coordinateDescent!(x, f, g)
 end
 
-function spSymKLIEP_refit!(x::SparseIterate, Ψx, Ψy)
-    m = length(x)
-    ω = ones(Float64, m) * 1e10
 
-    for i=1:m
-        if !iszero(x[i])
-            ω[i] = 0.
-        end
-    end
+# Computes the Hessian of the SymKLIEP loss
+SymKLIEP_Hessian(θ, Ψx, Ψy) = StatsBase.cov(Ψx, weights(KLIEPInference.rhat(-θ, Ψx)), 2; corrected=false) + StatsBase.cov(Ψy, weights(KLIEPInference.rhat(θ, Ψy)), 2; corrected=false)
 
-    f = CDSymKLIEPLoss(Ψx, Ψy)
-    g = ProxL1(1., ω)
-    coordinateDescent!(x, f, g)
-end
 
-function spSymKLIEP_refit!(
-    x::SparseIterate,
-    Ψx::Matrix{Float64},
-    Ψy::Matrix{Float64},
-    supp::Vector{Int64})
-
-    w = ones(Float64, length(x)) * 1e10
-    for k in supp
-        w[k] = 0.
-    end
-
-    f = CDSymKLIEPLoss(Ψx, Ψy)
-    g = ProxL1(1., w)
-    coordinateDescent!(x, f, g)
-end
-
-function SymKLIEP_debias(
-    ind::Int64,
-    θ,
-    ω::SparseVector,
-    Ψx::Matrix{Float64},
-    Ψy::Matrix{Float64})
-
+# debiasing
+function SymKLIEP_debias1(Ψx, Ψy, θ, ω, θ_ind::Int)
     μx = vec(mean(Ψx, dims=2))
     μy = vec(mean(Ψy, dims=2))
 
-    wx = zeros(size(Ψx,2))
-    mul!(wx, transpose(Ψx), θ)
-    wx .*= -1.
-    wx .= exp.(wx)
-    wx ./= mean(wx)
+    supp = KLIEPInference._find_supp(θ_ind, θ)
+    θk = SymKLIEP(Ψx[supp, :], Ψy[supp, :], CD_SymKLIEP())
 
-    wy = zeros(size(Ψy,2))
-    mul!(wy, transpose(Ψy), θ)
-    wy .= exp.(wy)
-    wy ./= mean(wy)
-
-    θ1 = θ[ind]
-    for k in ω.nzind
-        θ1 += ω[k] * ( μx[k] - μy[k] + mean( wx .* Ψx[k, :] ) - mean( wy .* Ψy[k, :] ) )
+    rx = KLIEPInference.rhat(-θk, Ψx[supp, :])
+    ry = KLIEPInference.rhat( θk, Ψy[supp, :])
+    θ1 = θk[end]
+    for l in findall(!iszero, ω)
+        θ1 += ω[l] * ( μx[l] - μy[l] + mean( rx .* Ψx[l, :] ) - mean( ry .* Ψy[l, :] ) )
     end
-    return θ1
+    θ1
 end
 
-# variance: sparse ω
-function SymKLIEP_var(
-    Ψx::Matrix{Float64},
-    Ψy::Matrix{Float64},
-    θ,
-    ω::SparseVector)
-
-    nx = size(Ψx, 2)
-    p, ny = size(Ψy)
-
-    supp = ω.nzind
-    s = nnz(ω)
-
-    # compute scalars
-    wx = -transpose(Ψx) * θ
-    wx .= exp.(wx)
-    wx ./= mean(wx)
-    wx .+= 1.
-
-    wy = transpose(Ψy) * θ
-    wy .= exp.(wy)
-    wy ./= mean(wy)
-    wy .+= 1.
-
-    # compute scaled data
-    Ψxw = Ψx[supp, :]
-    for i = 1:nx
-        for k = 1:s
-            Ψxw[k, i] *= wy[i]
-        end
-    end
-
-    Ψyw = Ψy[supp, :]
-    for j = 1:ny
-        for k = 1:s
-            Ψyw[k, j] *= wy[j]
-        end
-    end
-
-    # compute sample covariances
-    S  = cov( transpose(Ψxw), corrected=false ) / nx
-    S += cov( transpose(Ψyw), corrected=false ) / ny
-
-    # combine
-    σhat2 = 0.
-    for k in 1:s
-        for l in 1:s
-            σhat2 += S[k,l] * ω.nzval[k] * ω.nzval[l]
-        end
-    end
-
-    return σhat2
+function SymKLIEP_debias2(Ψx, Ψy, θ, ω, θ_ind::Int)
+    supp = KLIEPInference._find_supp(θ_ind, θ, ω)
+    θk = SymKLIEP(Ψx[supp,:], Ψy[supp,:], CD_SymKLIEP())
+    θk[end]
 end
 
-# variance: dense ω
-function SymKLIEP_var(
-    Ψx::Matrix{Float64},
-    Ψy::Matrix{Float64},
-    θ,
-    ω::Vector{Float64})
 
+# standard error
+function SymKLIEP_stderr(Ψx, Ψy, θ, ω)
     nx = size(Ψx, 2)
-    p, ny = size(Ψy)
-
-    # compute scalars
-    wx = -transpose(Ψx) * θ
-    wx .= exp.(wx)
-    wx ./= mean(wx)
-    wx .+= 1.
-
-    wy = transpose(Ψy) * θ
-    wy .= exp.(wy)
-    wy ./= mean(wy)
-    wy .+= 1.
-
-    # compute scaled data
-    Ψxw = zeros(p,nx)
-    for i = 1:nx
-        for k = 1:p
-            Ψxw[k, i] = Ψx[k, i] * wx[i]
+    ny = size(Ψy, 2)
+    supp = findall(!iszero, ω)
+    S = (cov(transpose(Ψx[supp, :]), corrected=false) ./ nx) .+ (cov(transpose(Ψy[supp, :]), corrected=false) ./ ny) .+ (cov(KLIEPInference.rhat(-θ, Ψx) .* transpose(Ψx[supp, :]), corrected=false) ./ nx) .+ (cov(KLIEPInference.rhat(θ, Ψy) .* transpose(Ψy[supp, :]), corrected=false) ./ ny)
+    σ2 = 0.
+    for k in 1:length(supp)
+        for l in 1:length(supp)
+            σ2 += S[k,l] * ω[supp][k] * ω[supp][l]
         end
     end
-
-    Ψyw = zeros(p,ny)
-    for j = 1:ny
-        for k = 1:p
-            Ψyw[k, j] = Ψy[k, j] * wy[j]
-        end
-    end
-
-    # compute sample covariances
-    S  = cov( transpose(Ψxw), corrected=false ) / nx
-    S += cov( transpose(Ψyw), corrected=false ) / ny
-
-    # combine
-    σhat2 = 0.
-    for k in 1:p
-        for l in 1:p
-            σhat2 += S[k,l] * ω[k] * ω[l]
-        end
-    end
-
-    return σhat2
+    sqrt(σ2)
 end
