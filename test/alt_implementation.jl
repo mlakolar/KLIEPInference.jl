@@ -17,7 +17,9 @@ KLIEP(Ψx, Ψy, ::Mosek_KLIEP) =
   _KLIEP(Ψx, Ψy, JuMP.optimizer_with_attributes(MosekTools.Mosek.Optimizer, "QUIET" => false))
 
 spKLIEP(Ψx, Ψy, λ, ::SCS_KLIEP) =
-  _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.with_optimizer(SCS.Optimizer, "verbose" => 1))
+  _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.optimizer_with_attributes(SCS.Optimizer, "verbose" => 1))
+spKLIEP(Ψx, Ψy, λ, ::Mosek_KLIEP) =
+  _spKLIEP!(Vector{Float64}(undef, size(Ψx, 1)), Ψx, Ψy, λ, JuMP.optimizer_with_attributes(MosekTools.Mosek.Optimizer, "QUIET" => false))
 
 
 ### solvers
@@ -62,7 +64,7 @@ function _spKLIEP!(θhat, Ψx, Ψy, λ, solver)
   # log-sum-exp constraints
   JuMP.@constraint(problem, sum(u) <= 1.)
   for j=1:ny
-      JuMP.@constraint(problem, [dot(x, Ψy[:, j]) - t - lny, 1., u[j]] in MOI.ExponentialCone())
+      JuMP.@constraint(problem, [dot(x, Ψy[:, j]) - t - lny, 1., u[j]] in MathOptInterface.ExponentialCone())
   end
 
   # l1 constraints
@@ -72,7 +74,7 @@ function _spKLIEP!(θhat, Ψx, Ψy, λ, solver)
   JuMP.@objective(problem, Min, -sum(Ψx'*x) / nx + t + λ*sum(b))
   JuMP.optimize!(problem)
 
-  θhat .= JuMP.result_value.(x)
+  θhat .= JuMP.value.(x)
 end
 
 end

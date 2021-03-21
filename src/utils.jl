@@ -1,10 +1,11 @@
-
+# Computes r_hat from Section 3.1.1 of the paper
 function rhat(θ, Ψy)
     r = transpose(Ψy) * θ
     r .= exp.(r)
     r ./ mean(r)
 end
 
+# Computes the Hessian of the KLIEP loss
 KLIEP_Hessian(θ, Ψy) = StatsBase.cov(Ψy, weights(rhat(θ, Ψy)), 2; corrected=false)
 
 # Computes the sufficient statistics for an Ising mode
@@ -65,10 +66,6 @@ function _find_supp(k::Int, x, y)
         supp3[pos_k], supp3[end] = supp3[end], supp3[pos_k]
     end
     supp3
-end
-
-function _maxabs(a, b)
-    maximum(x -> abs(x[1]-x[2]), zip(a, b))
 end
 
 # maps (i, j) coordinate of a symmetric matrix to a packed format
