@@ -7,12 +7,11 @@ import KLIEPInference: chain, IsingSampler
 import Random: rand
 
 @testset "trimap" begin
-    @test trimap(2, 1) == 1
-	@test trimap(1, 2) == 1
-	@test trimap(4, 3) == 6
+    @test trimap(1, 2) == 1
+	@test trimap(3, 4) == 6
 
-	@test itrimap(1) == CartesianIndex(2, 1)
-	@test itrimap(6) == CartesianIndex(4, 3)
+	@test itrimap(1) == CartesianIndex(1, 2)
+	@test itrimap(6) == CartesianIndex(3, 4)
 end
 
 @testset "pack" begin
