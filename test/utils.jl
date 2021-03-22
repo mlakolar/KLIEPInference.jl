@@ -35,7 +35,7 @@ end
 		n = 200
 		p = 3
 		m = 3
-		θ = chain(m, 3, 0.1, 0.2, 0)
+		θ = chain(m; lenC=3, lb=0.1, ub=0.2, sgn=0)
 		spl = IsingSampler(θ; burn=5000, thin=5000)
 		X = rand(spl, n)
 		Ψ = Ψising(X)
