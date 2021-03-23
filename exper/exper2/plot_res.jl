@@ -8,8 +8,8 @@ for set in ["set1", "set2", "set3", "set4"]
 
     fig = figure(figsize=(3, 3), dpi=300)
 
-    scatter(collect(-.75:.05:.75), power[:, 2], marker="o")
-    scatter(collect(-.75:.05:.75), power[:, 3], marker="v")
+    scatter(collect(-.75:.05:.75), power[1, :], marker="o")
+    scatter(collect(-.75:.05:.75), power[2, :], marker="v")
 
     minorticks_on()
     grid()
