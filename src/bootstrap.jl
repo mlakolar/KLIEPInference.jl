@@ -86,23 +86,17 @@ end
 boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples::Int=300, debias::Int=0) = _boot_SparKLIE(Ψx, Ψy, θ, Hinv, 1:length(θ); bootSamples, debias)
 boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamples::Int=300, debias::Int=0) = _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind; bootSamples, debias)
 
-function simulCI(straps::BootstrapEstimates, α::Float64=0.05)
+function boot_quantile(straps::BootstrapEstimates, prob)
     p, bootSamples = size(straps.θb)
 
     infNormDist = Vector{Float64}(undef, bootSamples)
     for b = 1:bootSamples
         infNormDist[b] = norm_diff(straps.θhat, view(straps.θb, :, b), Inf)
     end
-    x = quantile!(infNormDist, 1 - α)
-
-    CI = Matrix{Float64}(undef, p, 2)
-    CI[:, 1] .= straps.θhat .- x
-    CI[:, 2] .= straps.θhat .+ x
-
-    CI
+    quantile(infNormDist, prob)
 end
 
-function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
+function boot_quantile_studentized(straps::BootstrapEstimates, prob)
     p, bootSamples = size(straps.θb)
 
     infNormDist = Vector{Float64}(undef, bootSamples)
@@ -112,11 +106,5 @@ function simulCIstudentized(straps::BootstrapEstimates, α::Float64=0.05)
         tmp .= (straps.θhat .- straps.θb[:, b]) ./ w
         infNormDist[b] = norm(tmp, Inf)
     end
-    x = quantile!(infNormDist, 1 - α)
-
-    CI = Matrix{Float64}(undef, p, 2)
-    @. CI[:, 1] = straps.θhat - x * w
-    @. CI[:, 2] = straps.θhat + x * w
-
-    CI
+    quantile(infNormDist, prob), w
 end
