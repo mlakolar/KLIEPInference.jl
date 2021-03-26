@@ -21,8 +21,8 @@ export
     # inference
     BootstrapEstimates,
     boot_SparKLIE,
-    simulCI,
-    simulCIstudentized,
+    boot_quantile,
+    boot_quantile_studentized,
 
     # other
     Ψising,
