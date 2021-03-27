@@ -1,37 +1,74 @@
+using KLIEPInference
 using JLD
-using Printf
 
 scratch_dir = ARGS[1]
 
+p = 0.05:0.05:0.95
+
 for m in 25
-    for sgn in 1
+    for sgn in 0
         for numChanges in [1, 3, 5]
             println("computing power for $(m) $(sgn) $(numChanges) ...")
-            power = zeros(4, 11)
+
+            power = zeros(11, 4)
             for lbInd = 1:11
+                file = jldopen("params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
+                γx = read(file, "γx")
+                γy = read(file, "γy")
+                θ = γx - γy
+                close(file)
+
+                coverage = zeros(length(p), 4)
+
                 nrep = 0
                 for rep in 1:1000
                     try
                         file = jldopen("$(scratch_dir)/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld", "r")
-                        T1 = read(file, "T1")
-                        T2 = read(file, "T2")
-                        W1 = read(file, "W1")
-                        W2 = read(file, "W2")
+                        boot1 = read(file, "boot1")
+                        boot2 = read(file, "boot2")
                         close(file)
 
-                        power[1, lbInd] += T1
-                        power[2, lbInd] += T2
-                        power[3, lbInd] += W1
-                        power[4, lbInd] += W2
+                        # coverage
+                        q = boot_quantile(boot1, p)
+                        coverage[:, 1] .+= maximum(abs.(boot1.θhat - θ)) .<= q
+
+                        q = boot_quantile(boot2, p)
+                        coverage[:, 2] .+=  maximum(abs.(boot2.θhat - θ)) .<= q
+
+                        q, w = boot_quantile_studentized(boot1, p)
+                        coverage[:, 3] .+= maximum(abs.((boot1.θhat - θ) ./ w)) .<= q
+
+                        q, w = boot_quantile_studentized(boot2, p)
+                        coverage[:, 4] .+= maximum(abs.((boot2.θhat - θ) ./ w)) .<= q
+
+                        # power
+                        q = boot_quantile(boot1, 0.95)
+                        power[lbInd, 1] += maximum(abs.(boot1.θhat)) > q
+
+                        q = boot_quantile(boot2, 0.95)
+                        power[lbInd, 2] += maximum(abs.(boot2.θhat)) > q
+
+                        q, w = boot_quantile_studentized(boot1, 0.95)
+                        power[lbInd, 3] += maximum(abs.(boot1.θhat ./ w)) > q
+
+                        q, w = boot_quantile_studentized(boot2, 0.95)
+                        power[lbInd, 4] += maximum(abs.(boot2.θhat ./ w)) > q
 
                         nrep += 1
                     catch
-                        @warn "Could not open rep $(m) $(sgn) $(numChanges) $(lbInd) $(rep)"
+                        @warn "could not open $(m) $(sgn) $(numChanges) $(lbInd) $(rep)"
                     end
                 end
-                power[:, lbInd] ./= nrep
+
+                coverage = broadcast(/, coverage, nrep)
+
+                @save "coverage_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" coverage
+
+                power[lbInd, :] ./= nrep
             end
+
             @save "power_$(m)_$(sgn)_$(numChanges).jld" power
+
             println("... done!")
         end
     end

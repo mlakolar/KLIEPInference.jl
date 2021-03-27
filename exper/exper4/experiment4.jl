@@ -4,7 +4,9 @@ numChanges = parse(Int,ARGS[3])
 lbInd = parse(Int,ARGS[4])
 rep = parse(Int, ARGS[5])
 
-if isfile("./res/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld")
+scratch_dir = ARGS[6]   # e.g. "/scratch/midway2/byolkim/exper4"
+
+if isfile("$(scratch_dir)/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld")
     println("the file already exists!")
     exit()
 end
@@ -15,7 +17,7 @@ using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
 
 println("importing parameters from params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld")
-file = jldopen("./graphs/params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
+file = jldopen("params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
 γx = read(file, "γx")
 γy = read(file, "γy")
 close(file)
@@ -40,7 +42,7 @@ println("step 1")
 
 println("step 2")
 λ2 = sqrt(2. * log(p) / ny)
-H = KLIEP_Hessian(spzeros(Float64, p), Ψy)
+H = KLIEP_Hessian(θ, Ψy)
 Hinv = Vector{SparseIterate{Float64}}(undef, p)
 for k = 1:p
     ω = Hinv_row(H, k, λ2)
@@ -54,22 +56,9 @@ for k = 1:p
 end
 
 println("step 3 + bootstrap")
-boot1, boot2 = boot_SparKLIE(Ψx, Ψy, θ, Hinv)
+boot1, boot2 = boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples=1000)
 
-println("step 3 + bootstrap completed, testing at α = 0.05")
-CI = simulCI(boot1, 0.05)
-T1 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
-
-CI = simulCI(boot2, 0.05)
-T2 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
-
-CI = simulCIstudentized(boot1, 0.05)
-W1 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
-
-CI = simulCIstudentized(boot2, 0.05)
-W2 = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
-
-println("saving results to ./res/res_$(m)_$(sgn)_$(rep).jld")
-@save "./res/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld" T1 T2 W1 W2
+println("saving results to $(scratch_dir)/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld")
+@save "$(scratch_dir)/res_$(m)_$(sgn)_$(numChanges)_$(lbInd)_$(rep).jld" boot1 boot2
 
 println("done!")

@@ -1,11 +1,25 @@
 #!/bin/bash
 
-for m in "25" "50" "100"
+## m = 25
+for sgn in "-1" "0" "1"
 do
-  for sgn in "-1" "0" "1"
-  do
-    echo "sbatch ${m} ${sgn}..."
-    sbatch --job-name=exp3_${m}_${sgn} --mem=4G sbatch_exp3 ${m} ${sgn}
-    echo "... done"
-  done
+  echo "sbatch 25 ${sgn}..."
+  sbatch --job-name=exp3_25_${sgn} sbatch_exp3 25 ${sgn}
+  echo "... done"
+done
+
+## m = 50
+for sgn in "-1" "0" "1"
+do
+  echo "sbatch 50 ${sgn}..."
+  sbatch --job-name=exp3_50_${sgn} sbatch_exp3 50 ${sgn}
+  echo "... done"
+done
+
+## m = 100
+for sgn in "-1" "0" "1"
+do
+  echo "sbatch 100 ${sgn}..."
+  sbatch --job-name=exp3_100_${sgn} --mem=4G sbatch_exp3 100 ${sgn}
+  echo "... done"
 done

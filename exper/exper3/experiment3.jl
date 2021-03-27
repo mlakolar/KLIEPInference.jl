@@ -2,7 +2,9 @@ m = parse(Int, ARGS[1])
 sgn = parse(Int, ARGS[2])
 rep = parse(Int, ARGS[3])
 
-if isfile("./res/res_$(m)_$(sgn)_$(rep).jld")
+scratch_dir = ARGS[4]   # e.g. "/scratch/midway2/byolkim/exper3"
+
+if isfile("$(scratch_dir)/res_$(m)_$(sgn)_$(rep).jld")
     println("the file already exists!")
     exit()
 end
@@ -13,20 +15,20 @@ using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
 
 println("importing parameters from params_exp3_$(m)_$(sgn).jld")
-file = jldopen("./graphs/params_exp3_$(m)_$(sgn).jld", "r")
-θx = read(file, "θx")
-θy = read(file, "θy")
+file = jldopen("params_exp3_$(m)_$(sgn).jld", "r")
+γx = read(file, "γx")
+γy = read(file, "γy")
 close(file)
 
-p = length(θx)
+p = length(γx)
 nx = 500
 ny = 500
 
 println("generating samples")
 Random.seed!(123 + rep)
-spl = IsingSampler(θx; thin=2000)
+spl = IsingSampler(γx; thin=2000)
 X = rand(spl, nx)
-spl = IsingSampler(θy; thin=2000)
+spl = IsingSampler(γy; thin=2000)
 Y = rand(spl, ny)
 
 Ψx = Ψising(X)
@@ -38,7 +40,7 @@ println("step 1")
 
 println("step 2")
 λ2 = sqrt(2. * log(p) / ny)
-H = KLIEP_Hessian(spzeros(Float64, p), Ψy)
+H = KLIEP_Hessian(θ, Ψy)
 Hinv = Vector{SparseIterate{Float64}}(undef, p)
 for k = 1:p
     ω = Hinv_row(H, k, λ2)
@@ -52,21 +54,9 @@ for k = 1:p
 end
 
 println("step 3 + bootstrap")
-boot1, boot2 = boot_SparKLIE(Ψx, Ψy, θ, Hinv)
+boot1, boot2 = boot_SparKLIE(Ψx, Ψy, θ, Hinv; bootSamples=1000)
 
-println("step 3 + bootstrap completed, computing coverage")
-α = 0.05:0.05:0.95
-nα = length(α)
-res = zeros(Bool, 2, nα)
-for i in 1:nα
-    CI = simulCI(boot1, α[i])
-    res[1, i] = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
-
-    CI = simulCI(boot2, α[i])
-    res[2, i] = all(0 .<= CI[:, 2]) * all(0 .>= CI[:, 1]) ? 1 : 0
-end
-
-println("saving results to ./res/res_$(m)_$(sgn)_$(rep).jld")
-@save "./res/res_$(m)_$(sgn)_$(rep).jld" res
+println("saving results to $(scratch_dir)/res_$(m)_$(sgn)_$(rep).jld")
+@save "$(scratch_dir)/res_$(m)_$(sgn)_$(rep).jld" boot1 boot2
 
 println("done!")

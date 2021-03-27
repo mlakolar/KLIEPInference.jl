@@ -5,6 +5,7 @@ scratch_dir = ARGS[1]
 
 for set in ["set1", "set2", "set3", "set4"]
     power = zeros(2, length(-0.75:0.05:0.75))
+    
     i = 0
     for del in -0.75:0.05:0.75
         i += 1
@@ -21,7 +22,7 @@ for set in ["set1", "set2", "set3", "set4"]
 
                 nrep += 1
             catch
-                @warn "Could not open rep $(set) $(del) $(batch)"
+                @warn "could not open $(set) $(del) $(batch)"
             end
         end
 	    power[1, i] = power[1, i] / (nrep * 100)
@@ -30,4 +31,3 @@ for set in ["set1", "set2", "set3", "set4"]
 
     @save "power_$(set).jld" power
 end
-

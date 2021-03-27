@@ -12,7 +12,7 @@ lbInd = parse(Int,ARGS[4])
 lbArr = 0.0:.05:0.5
 lb = lbArr[lbInd]
 
-γx = chain(m, 5, 0.2, 0.4, sgn)
+γx = chain(m; lenC=5, lb=0.2, ub=0.4, sgn=sgn)
 γy = copy(γx)
 
 ind_change = sample(1:length(γx), numChanges; replace=false)
@@ -25,4 +25,4 @@ end
 @show ind_nz = findall(!iszero, θ)
 @show θ[ind_nz]
 
-@save "./graphs/params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" m sgn γx γy
+@save "params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" m sgn γx γy
