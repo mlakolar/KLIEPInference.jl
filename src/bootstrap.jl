@@ -92,9 +92,9 @@ function boot_quantile(straps::BootstrapEstimates, prob)
     for b = 1:bootSamples
         infNormDist[b] = norm_diff(straps.θhat, view(straps.θb, :, b), Inf)
     end
-    try
+    if count(isnan, infNormDist) == 0
         quantile(infNormDist, prob)
-    catch
+    else
         @warn "NaNs detected in BootstrapEstimates"
         quantile(infNormDist[findall(!isnan, infNormDist)], prob)
     end
@@ -109,9 +109,9 @@ function boot_quantile_studentized(straps::BootstrapEstimates, prob)
         tmp .= (straps.θhat .- straps.θb[:, b]) ./ w
         infNormDist[b] = norm(tmp, Inf)
     end
-    try
+    if count(isnan, infNormDist) == 0
         quantile(infNormDist, prob), w
-    catch
+    else
         @warn "NaNs detected in BootstrapEstimates"
         quantile(infNormDist[findall(!isnan, infNormDist)], prob), w
     end
