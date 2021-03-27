@@ -76,8 +76,8 @@ function _boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}
         return BootstrapEstimates(θ2, bθ2)
     else
         θ1 = _debias1(Ψx, Ψy, θ, Hinv, θ_ind)
-        θ2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
         bθ1 = _boot_SparKLIE1(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
+        θ2 = _debias2(Ψx, Ψy, θ, Hinv, θ_ind)
         bθ2 = _boot_SparKLIE2(Ψx, Ψy, θ, Hinv, θ_ind, x_ind, y_ind)
         return BootstrapEstimates(θ1, bθ1), BootstrapEstimates(θ2, bθ2)
     end
@@ -88,17 +88,20 @@ boot_SparKLIE(Ψx, Ψy, θ, Hinv, θ_ind::Union{Vector{Int},UnitRange}; bootSamp
 
 function boot_quantile(straps::BootstrapEstimates, prob)
     p, bootSamples = size(straps.θb)
-
     infNormDist = Vector{Float64}(undef, bootSamples)
     for b = 1:bootSamples
         infNormDist[b] = norm_diff(straps.θhat, view(straps.θb, :, b), Inf)
     end
-    quantile(infNormDist, prob)
+    try
+        quantile(infNormDist, prob)
+    catch
+        @warn "NaNs detected in BootstrapEstimates"
+        quantile(infNormDist[findall(!isnan, infNormDist)], prob)
+    end
 end
 
 function boot_quantile_studentized(straps::BootstrapEstimates, prob)
     p, bootSamples = size(straps.θb)
-
     infNormDist = Vector{Float64}(undef, bootSamples)
     tmp = Vector{Float64}(undef, p)
     w = reshape(std(straps.θb; dims = 2, corrected = false), :)
@@ -106,5 +109,10 @@ function boot_quantile_studentized(straps::BootstrapEstimates, prob)
         tmp .= (straps.θhat .- straps.θb[:, b]) ./ w
         infNormDist[b] = norm(tmp, Inf)
     end
-    quantile(infNormDist, prob), w
+    try
+        quantile(infNormDist, prob), w
+    catch
+        @warn "NaNs detected in BootstrapEstimates"
+        quantile(infNormDist[findall(!isnan, infNormDist)], prob), w
+    end
 end
