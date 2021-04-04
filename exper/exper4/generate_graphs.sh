@@ -2,7 +2,7 @@
 
 for m in "25"
 do
-  for sgn in "0"
+  for sgn in "1"
   do
     for numChanges in "1" "3" "5"
     do

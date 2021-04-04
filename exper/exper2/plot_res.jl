@@ -24,7 +24,7 @@ for set in ["set1", "set2", "set3", "set4"]
 
     tight_layout()
 
-    savefig("power_$(set).png")
+    savefig("res/exper2_$(set).png")
 
     close(fig)
 end

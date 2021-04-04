@@ -6,7 +6,7 @@ scratch_dir = ARGS[1]
 p = 0.05:0.05:0.95
 
 for m in 25
-    for sgn in 0
+    for sgn in 1
         for numChanges in [1, 3, 5]
             println("computing power for $(m) $(sgn) $(numChanges) ...")
 

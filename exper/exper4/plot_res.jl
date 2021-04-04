@@ -1,7 +1,7 @@
 using JLD, PyPlot
 
 for m in 25
-    for sgn in 0
+    for sgn in 1
         for numChanges in [1, 3, 5]
             file = jldopen("res/power_$(m)_$(sgn)_$(numChanges).jld", "r")
             power = read(file, "power")
@@ -33,7 +33,7 @@ for m in 25
 end
 
 for m in 25
-    for sgn in 0
+    for sgn in 1
         for numChanges in [1, 3, 5]
             file = jldopen("res/power_$(m)_$(sgn)_$(numChanges).jld", "r")
             power = read(file, "power")
@@ -65,7 +65,7 @@ for m in 25
 end
 
 for m in 25
-    for sgn in 0
+    for sgn in 1
         fig = figure(figsize=(27, 9), dpi=300)
 
         k = 0
@@ -100,7 +100,7 @@ for m in 25
 end
 
 for m in 25
-    for sgn in 0
+    for sgn in 1
         fig = figure(figsize=(27, 9), dpi=300)
 
         k = 0
