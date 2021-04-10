@@ -28,7 +28,7 @@ for m in [25, 50, 100]
             xlabel(L"$1 - \alpha$", size="xx-small")
         end
         if m == 50 && sgn == -1
-            ylabel(L"proportion $T > \hat c_{T, 1-\alpha}$", size="xx-small")
+            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
         end
     end
 end
@@ -67,7 +67,7 @@ for m in [25, 50, 100]
             xlabel(L"$1 - \alpha$", size="xx-small")
         end
         if m == 50 && sgn == -1
-            ylabel(L"proportion $T > \hat c_{T, 1-\alpha}$", size="xx-small")
+            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
         end
     end
 end
@@ -178,7 +178,7 @@ for m in [25, 50, 100]
             xlabel(L"$1 - \alpha$", size="xx-small")
         end
         if m == 50 && sgn == -1
-            ylabel(L"proportion $T > \hat c_{T, 1-\alpha}$", size="xx-small")
+            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
         end
     end
 end
@@ -217,7 +217,7 @@ for m in [25, 50, 100]
             xlabel(L"$1 - \alpha$", size="xx-small")
         end
         if m == 50 && sgn == -1
-            ylabel(L"proportion $T > \hat c_{T, 1-\alpha}$", size="xx-small")
+            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
         end
     end
 end
