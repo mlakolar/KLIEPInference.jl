@@ -45,6 +45,6 @@ for m in [25, 50, 100]
 
         coverage = broadcast(/, coverage, nrep)
 
-        @save "coverage_$(m)_$(sgn).jld" coverage
+        @save "$(scratch_dir)/coverage_$(m)_$(sgn).jld" coverage
     end
 end
