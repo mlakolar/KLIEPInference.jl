@@ -4,4 +4,4 @@
 2. Open file `experiment1.ipynb`.
 3. "Cell"->"Run All".
 4. Plot results: `julia plot_res.jl`.
-5. Plots are generated as `exper1_*.png`.
+5. Plots are generated as `res/exper1_*.png`.

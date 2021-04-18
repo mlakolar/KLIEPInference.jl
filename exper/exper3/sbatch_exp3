@@ -1,4 +1,5 @@
 #!/bin/bash
+SDIR="./res"
 
 ## call this file as
 ##   sbatch --job-name=exp3_m_sgn sbatch_exp3 m sgn
@@ -11,4 +12,4 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --time=1-12:00:00
 
-parallel --delay .2 -j 16 --joblog __$SLURM_JOB_NAME.runtask.log /mnt/storage/home/sl9885/julia-1.5.4/bin/julia experiment3.jl ${1} ${2} {1} ::: {1..1000}
+parallel --delay .2 -j 16 --joblog __$SLURM_JOB_NAME.runtask.log /mnt/storage/home/sl9885/julia-1.5.4/bin/julia experiment3.jl ${1} ${2} {1} $SDIR::: {1..1000}
