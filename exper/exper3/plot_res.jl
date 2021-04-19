@@ -24,11 +24,13 @@ for m in [25, 50, 100]
 
         tick_params("both", labelsize="xx-small")
 
+        title("m = $(m), sgn = $(sgn)", size="x-small")
+
         if m == 100 && sgn == 0
-            xlabel(L"$1 - \alpha$", size="xx-small")
+            xlabel(L"$1 - \alpha$", size="x-small")
         end
         if m == 50 && sgn == -1
-            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
+            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="x-small")
         end
     end
 end
@@ -63,11 +65,13 @@ for m in [25, 50, 100]
 
         tick_params("both", labelsize="xx-small")
 
+        title("m = $(m), sgn = $(sgn)", size="x-small")
+
         if m == 100 && sgn == 0
-            xlabel(L"$1 - \alpha$", size="xx-small")
+            xlabel(L"$1 - \alpha$", size="x-small")
         end
         if m == 50 && sgn == -1
-            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
+            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="x-small")
         end
     end
 end
@@ -99,11 +103,13 @@ for m in [25, 50, 100]
 
         tick_params("both", labelsize="xx-small")
 
+        title("m = $(m), sgn = $(sgn)", size="x-small")
+
         if m == 100 && sgn == 0
-            xlabel(L"$1 - \alpha$", size="xx-small")
+            xlabel(L"$1 - \alpha$", size="x-small")
         end
         if m == 50 && sgn == -1
-            ylabel("proportion SparKLIE+1 == SparKLIE+2", size="xx-small")
+            ylabel("proportion SparKLIE+1 == SparKLIE+2", size="x-small")
         end
     end
 end
@@ -135,11 +141,13 @@ for m in [25, 50, 100]
 
         tick_params("both", labelsize="xx-small")
 
+        title("m = $(m), sgn = $(sgn)", size="x-small")
+
         if m == 100 && sgn == 0
-            xlabel(L"$1 - \alpha$", size="xx-small")
+            xlabel(L"$1 - \alpha$", size="x-small")
         end
         if m == 50 && sgn == -1
-            ylabel("proportion SparKLIE+1 == SparKLIE+2", size="xx-small")
+            ylabel("proportion SparKLIE+1 == SparKLIE+2", size="x-small")
         end
     end
 end
@@ -147,83 +155,5 @@ end
 tight_layout()
 
 savefig("res/exper3_compare_studentized.png")
-
-close(fig)
-
-# just the tail
-fig = figure(figsize=(6, 6), dpi=300)
-
-k = 0
-for m in [25, 50, 100]
-    for sgn in [-1, 0, 1]
-        file = jldopen("res/coverage_$(m)_$(sgn).jld", "r")
-        coverage = read(file, "coverage")
-        close(file)
-
-        global k += 1
-
-        ax = subplot(3, 3, k)
-
-        plot(0.89:0.01:1.00, 0.89:0.01:1.00, color="grey", linestyle=":", linewidth=.25)
-
-        plot(0.90:0.01:0.99, coverage[20:end, 1], linewidth=.25, marker="o", markersize=2)
-        plot(0.90:0.01:0.99, coverage[20:end, 2], linewidth=.25, marker="v", markersize=2)
-
-        xlim(0.89, 1.0)
-        ylim(0.86, 1.0)
-
-        tick_params("both", labelsize="xx-small")
-
-        if m == 100 && sgn == 0
-            xlabel(L"$1 - \alpha$", size="xx-small")
-        end
-        if m == 50 && sgn == -1
-            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
-        end
-    end
-end
-
-tight_layout()
-
-savefig("res/exper3_coverage_tail.png")
-
-close(fig)
-
-# just the tail, studentized
-fig = figure(figsize=(6, 6), dpi=300)
-
-k = 0
-for m in [25, 50, 100]
-    for sgn in [-1, 0, 1]
-        file = jldopen("res/coverage_$(m)_$(sgn).jld", "r")
-        coverage = read(file, "coverage")
-        close(file)
-
-        global k += 1
-
-        ax = subplot(3, 3, k)
-
-        plot(0.89:0.01:1.00, 0.89:0.01:1.00, color="grey", linestyle=":", linewidth=.25)
-
-        plot(0.90:0.01:0.99, coverage[20:end, 4], linewidth=.25, marker="o", markersize=2)
-        plot(0.90:0.01:0.99, coverage[20:end, 5], linewidth=.25, marker="v", markersize=2)
-
-        xlim(0.89, 1.0)
-        ylim(0.84, 1.0)
-
-        tick_params("both", labelsize="xx-small")
-
-        if m == 100 && sgn == 0
-            xlabel(L"$1 - \alpha$", size="xx-small")
-        end
-        if m == 50 && sgn == -1
-            ylabel(L"proportion $T \leq \hat c_{T, 1-\alpha}$", size="xx-small")
-        end
-    end
-end
-
-tight_layout()
-
-savefig("res/exper3_coverage_studentized_tail.png")
 
 close(fig)

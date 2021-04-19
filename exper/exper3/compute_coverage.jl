@@ -3,7 +3,7 @@ using JLD
 
 scratch_dir = ARGS[1]
 
-p = vcat(0.05:0.05:0.95, 0.90:0.01:0.99)
+p = 0.05:0.05:0.95
 
 for m in [25, 50, 100]
     for sgn in [-1, 0, 1]
