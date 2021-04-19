@@ -1,11 +1,11 @@
 #!/bin/bash
 ScratchDIR="/mnt/storage/home/sl9885/scratch/expr4"
 
-for m in "25" "50" "100"
+for m in "25"
 do
   for sgn in "1"
   do
-    for numChanges in "1" "3" "5"
+    for numChanges in "1"
     do
       for lbInd in {1..11}
       do
