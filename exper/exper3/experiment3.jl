@@ -15,7 +15,7 @@ using LinearAlgebra, SparseArrays, Statistics, Random
 using Distributions, StatsBase, JLD
 
 println("importing parameters from params_exp3_$(m)_$(sgn).jld")
-file = jldopen("params_exp3_$(m)_$(sgn).jld", "r")
+file = jldopen("graphs/params_exp3_$(m)_$(sgn).jld", "r")
 γx = read(file, "γx")
 γy = read(file, "γy")
 close(file)

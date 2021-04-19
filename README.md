@@ -22,7 +22,7 @@ You will also need to install the following software.
 
 - JLD, Distributions, ProximalBase, CoordinateDescent, StatsBase, PyPlot, IJulia.
 
-`using Pkg; Pkg.add.(["JLD", "Distributions", "ProximalBase", "CoordinateDescent", "StatsBase", "PyPlot", "IJulia"])`
+`using Pkg; Pkg.add.(["JLD", "Distributions", "ProximalBase", "CoordinateDescent", "StatsBase", "PyPlot", "IJulia", "Revise"])`
 
 - GNU Parallel.
 

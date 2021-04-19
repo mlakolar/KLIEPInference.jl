@@ -69,7 +69,7 @@ for m in [25, 50]
 
         tight_layout()
 
-        savefig("exper1_$(graph)_$(m).png")
+        savefig("res/exper1_$(graph)_$(m).png")
         close(fig)
     end
 end
