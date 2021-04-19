@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## This script will start 9 nodes, for 9 differernt settings of m and sgn.
-ScratchDIR="/mnt/storage/home/sl9885/KLIEPInference.jl/exper/exper3/res"
+ScratchDIR="/mnt/storage/home/sl9885/scratch/expr3"
 
 for m in "25" "50" "100"
 do

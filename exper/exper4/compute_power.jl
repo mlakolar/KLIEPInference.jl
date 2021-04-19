@@ -12,7 +12,7 @@ for m in 25
 
             power = zeros(11, 4)
             for lbInd = 1:11
-                file = jldopen("params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
+                file = jldopen("graphs/params_exp4_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
                 γx = read(file, "γx")
                 γy = read(file, "γy")
                 θ = γx - γy
@@ -62,12 +62,12 @@ for m in 25
 
                 coverage = broadcast(/, coverage, nrep)
 
-                @save "coverage_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" coverage
+                @save "res/coverage_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld" coverage
 
                 power[lbInd, :] ./= nrep
             end
 
-            @save "power_$(m)_$(sgn)_$(numChanges).jld" power
+            @save "res/power_$(m)_$(sgn)_$(numChanges).jld" power
 
             println("... done!")
         end
