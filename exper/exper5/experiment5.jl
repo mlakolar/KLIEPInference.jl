@@ -4,7 +4,7 @@ nx = parse(Int, ARGS[3])
 ny = parse(Int, ARGS[4])
 rep = parse(Int, ARGS[5])
 
-scratch_dir = "/scratch/midway2/byolkim/exper5"
+scratch_dir = ARGS[6]
 
 if isfile("$(scratch_dir)/res_$(graph)_$(rep).jld")
     println("the file already exists!")
