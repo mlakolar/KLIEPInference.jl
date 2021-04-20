@@ -6,8 +6,8 @@ deps/deps.jl
 *~
 *.log
 *.DS_Store
-exper/exper3/res/*.jld
-exper/exper4/res/*.jld
-exper/exper1/res/*.png
-exper/exper2/res/*.png
-exper/exper3/graphs/*
+exper/exper3/res/*
+exper/exper4/res/*
+exper/exper1/res/*
+exper/exper2/res/*
+exper/exper5/res/*
