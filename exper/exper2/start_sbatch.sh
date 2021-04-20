@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#Change the scratch folder to somewhere you would like to store intermediate experimental results
 SCRATCH_DIR=/scratch/midway2/mkolar/KLIEP
 
 for set_i in "set1" "set2" "set3" "set4"
