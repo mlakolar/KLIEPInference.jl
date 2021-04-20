@@ -20,7 +20,7 @@ You can obtain KLIEPInference using Julia's Pkg REPL-mode (hitting `]` as the fi
 
 You will also need to install the following software.
 
-- JLD, Distributions, ProximalBase, CoordinateDescent, StatsBase, PyPlot, IJulia.
+- JLD, Distributions, ProximalBase, CoordinateDescent, StatsBase, PyPlot, IJulia, Revise.
 
 `using Pkg; Pkg.add.(["JLD", "Distributions", "ProximalBase", "CoordinateDescent", "StatsBase", "PyPlot", "IJulia", "Revise"])`
 
@@ -30,7 +30,7 @@ You can install this package using `sudo apt install parallel`.
 
 - Jupyter Notebook.
 
-Follow instructions [here](https://jupyter.org/install).
+To install Jupyter Notebook, follow instructions [here](https://jupyter.org/install).
 
 ### Reproducing experimental results
 
