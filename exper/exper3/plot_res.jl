@@ -1,7 +1,7 @@
 using JLD, PyPlot
 
 # Figure 1
-fig = figure(figsize=(6, 6), dpi=300)
+fig = figure(figsize=(7.08661, 7.08661), dpi=1000)
 
 k = 0
 for m in [25, 50, 100]
@@ -37,12 +37,12 @@ end
 
 tight_layout()
 
-savefig("res/exper3_coverage.png")
+savefig("res/exper3_coverage.pdf")
 
 close(fig)
 
 # studentized
-fig = figure(figsize=(6, 6), dpi=300)
+fig = figure(figsize=(7.08661, 7.08661), dpi=1000)
 
 k = 0
 for m in [25, 50, 100]
@@ -78,12 +78,12 @@ end
 
 tight_layout()
 
-savefig("res/exper3_coverage_studentized.png")
+savefig("res/exper3_coverage_studentized.pdf")
 
 close(fig)
 
 # compare SparKLIE+1 vs SparKLIE+2
-fig = figure(figsize=(6, 6), dpi=300)
+fig = figure(figsize=(7.08661, 7.08661), dpi=1000)
 
 k = 0
 for m in [25, 50, 100]
@@ -116,12 +116,12 @@ end
 
 tight_layout()
 
-savefig("res/exper3_compare.png")
+savefig("res/exper3_compare.pdf")
 
 close(fig)
 
 # compare SparKLIE+1 vs SparKLIE+2, studentized
-fig = figure(figsize=(6, 6), dpi=300)
+fig = figure(figsize=(7.08661, 7.08661), dpi=1000)
 
 k = 0
 for m in [25, 50, 100]
@@ -154,6 +154,6 @@ end
 
 tight_layout()
 
-savefig("res/exper3_compare_studentized.png")
+savefig("res/exper3_compare_studentized.pdf")
 
 close(fig)

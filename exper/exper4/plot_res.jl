@@ -1,135 +1,69 @@
-using JLD, PyPlot
+using DelimitedFiles, PyPlot
 
-for m in 25
-    for sgn in 1
-        for numChanges in [1, 3, 5]
-            file = jldopen("res/power_$(m)_$(sgn)_$(numChanges).jld", "r")
-            power = read(file, "power")
-            close(file)
+res, header = readdlm("res/exper4.csv", ',', Int64, '\n'; header=true)
 
-            fig = figure(figsize=(3, 3), dpi=300)
+for m in [25, 50, 100]
+    fig = figure(figsize=(3.14961, 3.14961), dpi=1000)
 
-            scatter(0.0:0.05:0.4, power[1:9, 1], s=5, marker="o")
-            scatter(0.0:0.05:0.4, power[1:9, 2], s=5, marker="v")
+    power = res[findall((res[:, 1] .== m) .& (res[:, 2] .== 1)), 4] ./ 1000
 
-            minorticks_on()
-            grid()
-            grid(which="minor", ls="dotted", lw=".5")
+    scatter(0.0:0.05:0.5, power, s=5, marker="o")
 
-            xlabel("δ", size="xx-small")
-            ylabel("proportion of rejections", size="xx-small")
+    power = res[findall((res[:, 1] .== m) .& (res[:, 2] .== 3)), 4] ./ 1000
 
-            ylim(0, 1.05)
+    scatter(0.0:0.05:0.5, power, s=5, marker="v")
 
-            tick_params("both", labelsize="xx-small")
+    power = res[findall((res[:, 1] .== m) .& (res[:, 2] .== 5)), 4] ./ 1000
 
-            tight_layout()
+    scatter(0.0:0.05:0.5, power, s=5, marker="s")
 
-            savefig("res/power_$(m)_$(sgn)_$(numChanges).png")
+    minorticks_on()
+    grid()
+    grid(which="minor", ls="dotted", lw=".5")
 
-            close(fig)
-        end
-    end
-end
+    title("without Studentization", size="xx-small")
+    xlabel("δ", size="xx-small")
+    ylabel("proportion of rejections", size="xx-small")
 
-for m in 25
-    for sgn in 1
-        for numChanges in [1, 3, 5]
-            file = jldopen("res/power_$(m)_$(sgn)_$(numChanges).jld", "r")
-            power = read(file, "power")
-            close(file)
+    ylim(0, 1.05)
 
-            fig = figure(figsize=(3, 3), dpi=300)
+    tick_params("both", labelsize="xx-small")
 
-            scatter(0.0:0.05:0.4, power[1:9, 3], s=5, marker="o")
-            scatter(0.0:0.05:0.4, power[1:9, 4], s=5, marker="v")
+    tight_layout()
 
-            minorticks_on()
-            grid()
-            grid(which="minor", ls="dotted", lw=".5")
+    savefig("res/exper4_$(m).pdf")
 
-            xlabel("δ", size="xx-small")
-            ylabel("proportion of rejections", size="xx-small")
+    close(fig)
 
-            ylim(0, 1.05)
+    fig = figure(figsize=(3.14961, 3.14961), dpi=1000)
 
-            tick_params("both", labelsize="xx-small")
+    power = res[findall((res[:, 1] .== m) .& (res[:, 2] .== 1)), 5] ./ 1000
 
-            tight_layout()
+    scatter(0.0:0.05:0.5, power, s=5, marker="o")
 
-            savefig("res/power_studentized_$(m)_$(sgn)_$(numChanges).png")
+    power = res[findall((res[:, 1] .== m) .& (res[:, 2] .== 3)), 5] ./ 1000
 
-            close(fig)
-        end
-    end
-end
+    scatter(0.0:0.05:0.5, power, s=5, marker="v")
 
-for m in 25
-    for sgn in 1
-        fig = figure(figsize=(27, 9), dpi=300)
+    power = res[findall((res[:, 1] .== m) .& (res[:, 2] .== 5)), 5] ./ 1000
 
-        k = 0
-        for numChanges in [1, 3, 5]
-            for lbInd = 1:9
-                k += 1
+    scatter(0.0:0.05:0.5, power, s=5, marker="s")
 
-                ax = subplot(3, 9, k)
+    minorticks_on()
+    grid()
+    grid(which="minor", ls="dotted", lw=".5")
 
-                file = jldopen("res/coverage_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
-                coverage = read(file, "coverage")
-                close(file)
+    title("Studentized", size="xx-small")
+    xlabel("δ", size="xx-small")
+    ylabel("proportion of rejections", size="xx-small")
 
-                plot(0.0:0.05:1.0, 0.0:0.05:1.0, color="grey", linestyle=":", linewidth=.25)
+    ylim(0, 1.05)
 
-                plot(0.05:0.05:0.95, coverage[1:19, 1], linewidth=.25, marker="o", markersize=2)
-                plot(0.05:0.05:0.95, coverage[1:19, 2], linewidth=.25, marker="v", markersize=2)
+    tick_params("both", labelsize="xx-small")
 
-                ax.set_xlim(0.0, 1.0)
-                ax.set_ylim(0.0, 1.0)
+    tight_layout()
 
-                ax[:tick_params]("both", labelsize=2)
-            end
-        end
+    savefig("res/exper4_$(m)_studentized.pdf")
 
-        tight_layout()
-
-        savefig("res/coverage_$(m)_$(sgn).png")
-
-        close(fig)
-    end
-end
-
-for m in 25
-    for sgn in 1
-        fig = figure(figsize=(27, 9), dpi=300)
-
-        k = 0
-        for numChanges in [1, 3, 5]
-            for lbInd = 1:9
-                k += 1
-
-                ax = subplot(3, 9, k)
-
-                file = jldopen("res/coverage_$(m)_$(sgn)_$(numChanges)_$(lbInd).jld", "r")
-                coverage = read(file, "coverage")
-                close(file)
-
-                plot(0.0:0.05:1.0, 0.0:0.05:1.0, color="grey", linestyle=":", linewidth=.25)
-
-                plot(0.05:0.05:0.95, coverage[1:19, 3], linewidth=.25, marker="o", markersize=2)
-                plot(0.05:0.05:0.95, coverage[1:19, 4], linewidth=.25, marker="v", markersize=2)
-
-                ax.set_xlim(0.0, 1.0)
-                ax.set_ylim(0.0, 1.0)
-
-                ax[:tick_params]("both", labelsize=2)
-            end
-        end
-
-        tight_layout()
-
-        savefig("res/coverage_studentized_$(m)_$(sgn).png")
-
-        close(fig)
-    end
+    close(fig)
 end

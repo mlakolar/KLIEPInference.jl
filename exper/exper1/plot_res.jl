@@ -29,7 +29,7 @@ for m in [25, 50]
         x = range(-3.290, stop=3.290, length=100)
         y = pdf.(Normal(), x)
 
-        fig = figure(figsize=(6,4), dpi=300)
+        fig = figure(figsize=(7.08661, 4.72441), dpi=1000)
 
         ax = subplot(2, 3, 1)
         qqplot(res[:, 1, 2], color="grey")
@@ -69,7 +69,7 @@ for m in [25, 50]
 
         tight_layout()
 
-        savefig("res/exper1_$(graph)_$(m).png")
+        savefig("res/exper1_$(graph)_$(m).pdf")
         close(fig)
     end
 end

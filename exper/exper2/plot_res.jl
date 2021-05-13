@@ -6,7 +6,7 @@ for set in ["set1", "set2", "set3", "set4"]
     power = read(file, "power")
     close(file)
 
-    fig = figure(figsize=(3, 3), dpi=300)
+    fig = figure(figsize=(3.14961, 3.14961), dpi=1000)
 
     scatter(-.75:.05:.75, power[1, :], s=5, marker="o")
     scatter(-.75:.05:.75, power[2, :], s=5, marker="v")
@@ -24,7 +24,7 @@ for set in ["set1", "set2", "set3", "set4"]
 
     tight_layout()
 
-    savefig("res/exper2_$(set).png")
+    savefig("res/exper2_$(set).pdf")
 
     close(fig)
 end
