@@ -1,5 +1,6 @@
 module CoordinateDescentAPITest
-using Test, CoordinateDescent, ProximalBase, KLIEPInference, LinearAlgebra, Statistics
+using Test, KLIEPInference, LinearAlgebra, Statistics
+using KLIEPInference: CoordinateDescent, SparseIterate, NormL1
 
 # Independent binary features give a diagonal Hessian at zero. Their exact
 # tilting parameter is atanh(mu), so no reference optimizer is needed.
