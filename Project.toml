@@ -20,5 +20,5 @@ ProximalBase = "0.5"
 julia = "1.10"
 
 [sources]
-CoordinateDescent = {url = "https://github.com/mlakolar/CoordinateDescent.jl", rev = "codex/issue-40-julia-naming"}
+CoordinateDescent = {url = "https://github.com/mlakolar/CoordinateDescent.jl", rev = "master"}
 ProximalBase = {url = "https://github.com/mlakolar/ProximalBase.jl", rev = "master"}
