@@ -20,7 +20,7 @@ function CDSymKLIEPLoss(Ψx::Matrix{Float64}, Ψy::Matrix{Float64})
     CDSymKLIEPLoss(vec(mean(Ψx, dims=2)), vec(mean(Ψy, dims=2)), Ψx, Ψy, zeros(size(Ψx, 2)), zeros(size(Ψy, 2)), p)
 end
 
-CoordinateDescent.numCoordinates(f::CDSymKLIEPLoss) = f.p
+CoordinateDescent.num_coordinates(f::CDSymKLIEPLoss) = f.p
 
 function CoordinateDescent.initialize!(f::CDSymKLIEPLoss, x::SparseIterate)
     mul!(f.rx, transpose(f.Ψx), x)
@@ -42,9 +42,9 @@ function CoordinateDescent.gradient(
     -μx[j] + μy[j] - mean( exp.(rx) .* Ψx[j, :] ) / mean(exp, rx) + mean( exp.(ry) .* Ψy[j, :] ) / mean(exp, ry)
 end
 
-function CoordinateDescent.descendCoordinate!(
+function CoordinateDescent.descend_coordinate!(
     f::CDSymKLIEPLoss,
-    g::Union{ProxL1, ProxZero},
+    g::Union{NormL1, ZeroFunction},
     x::SparseIterate,
     j::Int64)
 
@@ -64,7 +64,7 @@ function CoordinateDescent.descendCoordinate!(
 
     @inbounds oldVal = x[j]
     @inbounds x[j] -= grad / H
-    newVal = cdprox!(g, x, j, 1. / H)
+    newVal = prox_coordinate!(x, g, j, 1. / H)
     h = newVal - oldVal
 
     # update internals
@@ -85,16 +85,16 @@ SymKLIEP(Ψx, Ψy, ::CD_SymKLIEP) = SymKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, 
 
 function SymKLIEP!(x::SparseIterate, Ψx, Ψy)
     f = CDSymKLIEPLoss(Ψx, Ψy)
-    g = ProxZero()
-    coordinateDescent!(x, f, g)
+    g = ZeroFunction()
+    coordinate_descent!(x, f, g).minimizer
 end
 
 spSymKLIEP(Ψx, Ψy, λ, ::CD_SymKLIEP) = spSymKLIEP!(SparseIterate(size(Ψx, 1)), Ψx, Ψy, λ)
 
 function spSymKLIEP!(x::SparseIterate, Ψx, Ψy, λ)
     f = CDSymKLIEPLoss(Ψx, Ψy)
-    g = ProxL1(λ)
-    coordinateDescent!(x, f, g)
+    g = NormL1(λ)
+    coordinate_descent!(x, f, g).minimizer
 end
 
 

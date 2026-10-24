@@ -129,7 +129,7 @@ function CDKLIEPLoss(Ψx::Matrix{Float64}, Ψy::Matrix{Float64})
     CDKLIEPLoss(vec(mean(Ψx, dims=2)), Ψy, zeros(size(Ψy, 2)), p)
 end
 
-CoordinateDescent.numCoordinates(f::CDKLIEPLoss) = f.p
+CoordinateDescent.num_coordinates(f::CDKLIEPLoss) = f.p
 
 function CoordinateDescent.initialize!(f::CDKLIEPLoss, x::SparseIterate)
 
@@ -148,9 +148,9 @@ function CoordinateDescent.gradient(
     -μx[j] + mean( exp.(r) .* Ψy[j, :] ) / mean(exp, r)
 end
 
-function CoordinateDescent.descendCoordinate!(
+function CoordinateDescent.descend_coordinate!(
     f::CDKLIEPLoss,
-    g::Union{ProxL1, ProxZero},
+    g::Union{NormL1, ZeroFunction},
     x::SparseIterate,
     j::Int64)
 
@@ -165,7 +165,7 @@ function CoordinateDescent.descendCoordinate!(
 
     @inbounds oldVal = x[j]
     @inbounds x[j] -= grad / H
-    newVal = cdprox!(g, x, j, 1. / H)
+    newVal = prox_coordinate!(x, g, j, 1. / H)
     h = newVal - oldVal
 
     # update internals
