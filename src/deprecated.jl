@@ -7,8 +7,8 @@ function spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, supp::Vector{Int64})
     end
 
     f = CDKLIEPLoss(Ψx, Ψy)
-    g = ProxL1(1., w)
-    coordinateDescent!(x, f, g)
+    g = NormL1(1., w)
+    coordinate_descent!(x, f, g).minimizer
 end
 
 spKLIEP_refit!(x::SparseIterate, Ψx, Ψy) = spKLIEP_refit!(x::SparseIterate, Ψx, Ψy, findall(!iszero, x))

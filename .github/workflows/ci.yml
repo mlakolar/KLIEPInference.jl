@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         version:
-          - '1.5'
+          - '1.10'
           - '1'
         os:
           - ubuntu-latest
@@ -25,6 +25,14 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      # CoordinateDescent 0.8 and its unregistered solver dependency.
+      - name: Install the coordinated API update
+        shell: julia --project=. {0}
+        run: |
+          using Pkg
+          Pkg.add([PackageSpec(url="https://github.com/mlakolar/ProximalBase.jl", rev="master"),
+                   PackageSpec(url="https://github.com/mlakolar/ProximalSolvers.jl", rev="master"),
+                   PackageSpec(url="https://github.com/mlakolar/CoordinateDescent.jl", rev="codex/issue-40-julia-naming")])
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1

@@ -1,5 +1,6 @@
 
 tests = [
+  "coordinate_descent_api",
   "utils",
   "solver"
 ]
